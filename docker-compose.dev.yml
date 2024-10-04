@@ -1,0 +1,51 @@
+services:
+  frontend:
+      build:
+        context: .
+        dockerfile: frontend/Dockerfile.dev
+      ports:
+        - "${FRONTEND_PORT:-3000}:3000"
+      env_file:
+        - .env.development
+      environment:
+        - NODE_ENV=development
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules
+      command: npm run dev
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    ports:
+      - "${BACKEND_PORT:-9797}:9797"
+    env_file:
+      - .env.development
+    environment:
+      - GO_ENV=development
+    volumes:
+      - ./backend:/app
+    command: go run main.go
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_container
+    restart: always
+    env_file:
+      - .env.production
+    expose:
+      - 3306
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb_data:

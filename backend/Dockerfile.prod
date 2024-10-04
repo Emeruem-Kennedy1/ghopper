@@ -1,0 +1,17 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY backend/go.mod backend/go.sum ./
+
+COPY .env.production ./backend
+
+RUN go mod download
+
+COPY backend/ .
+
+RUN go build -o main .
+
+EXPOSE 9797
+
+CMD ["./main"]

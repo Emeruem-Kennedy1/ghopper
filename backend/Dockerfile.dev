@@ -1,0 +1,13 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY backend/go.mod backend/go.sum ./
+
+COPY .env.production ./backend
+
+RUN go mod download
+
+COPY backend .
+
+CMD ["go", "run", "main.go"]
