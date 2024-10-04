@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY backend/go.mod backend/go.sum ./
 
-COPY .env.production ./backend
+COPY .env.production ./backend/cmd/server
 
 RUN go mod download
 
 COPY backend .
 
-CMD ["go", "run", "main.go"]
+CMD ["go", "run", "./cmd/server/main.go"]
