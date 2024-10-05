@@ -6,6 +6,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/config"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/auth"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/handlers"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/middleware"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/gin-gonic/gin"
 )
@@ -43,6 +44,12 @@ func (s *Server) setupRoutes() {
 	s.router.GET("/ping", handlers.Ping())
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
 	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo))
+
+	protected := s.router.Group("/api")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.GET("/user", handlers.GetUser(s.userRepo))
+	}
 }
 
 func (s *Server) Run() error {

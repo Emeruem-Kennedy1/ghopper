@@ -1,11 +1,20 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter } from 'react-router-dom'
 import './assets/styles/App.css'
+import { AuthProvider } from './context/AuthProvider'
+import AppRoutes from './routes/AppRoutes'
 
-function App() {
+const queryClient = new QueryClient()
 
+const App = () => {
   return (
-    <>
-      <h1>Welcome to the G-Hopper App</h1>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 
