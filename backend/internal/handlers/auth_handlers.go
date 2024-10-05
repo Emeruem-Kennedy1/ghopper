@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Emeruem-Kennedy1/ghopper/internal/auth"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +15,7 @@ func SpotifyLogin(spotifyAuth *auth.SpotifyAuth) gin.HandlerFunc {
 	}
 }
 
-func SpotifyCallback(spotufyAuth *auth.SpotifyAuth) gin.HandlerFunc {
+func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		client, err := spotufyAuth.CallBack(ctx.Request)
 		if err != nil {
@@ -22,9 +23,16 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth) gin.HandlerFunc {
 			return
 		}
 
-		user, err := spotufyAuth.GetUserInfo(client)
+		spotifyUser, err := spotufyAuth.GetUserInfo(client)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+			return
+		}
+
+		// create or update user in the database
+		user, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create or update user"})
 			return
 		}
 

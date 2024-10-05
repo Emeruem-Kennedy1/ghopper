@@ -6,6 +6,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/config"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/auth"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/handlers"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,9 +14,10 @@ type Server struct {
 	router      *gin.Engine
 	config      *config.Config
 	spotifyAuth *auth.SpotifyAuth
+	userRepo    *repository.UserRepository
 }
 
-func NewServer(cfg *config.Config) (*Server, error) {
+func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server, error) {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -30,6 +32,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		router:      r,
 		config:      cfg,
 		spotifyAuth: spotifyAuth,
+		userRepo:    userRepo,
 	}
 
 	s.setupRoutes()
@@ -39,7 +42,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 func (s *Server) setupRoutes() {
 	s.router.GET("/ping", handlers.Ping())
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
-	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth))
+	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo))
 }
 
 func (s *Server) Run() error {

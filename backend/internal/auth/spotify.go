@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/Emeruem-Kennedy1/ghopper/config"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/models"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/Emeruem-Kennedy1/ghopper/pkg/utils"
 	"github.com/zmb3/spotify"
 )
@@ -56,4 +58,25 @@ func (sa *SpotifyAuth) GetUserInfo(client *spotify.Client) (*spotify.PrivateUser
 	}
 
 	return user, nil
+}
+
+func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spotifyUser spotify.PrivateUser) (*models.User, error) {
+	user := &models.User{
+		ID:          spotifyUser.ID,
+		DisplayName: spotifyUser.DisplayName,
+		Email:       spotifyUser.Email,
+		Country:     spotifyUser.Country,
+	}
+
+	if len(spotifyUser.Images) > 0 {
+		user.ProfileImage = spotifyUser.Images[0].URL
+	}
+
+	err := userRepo.UpsertUser(user)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create or update user: %v", err)
+	}
+
+	return user, nil
+
 }

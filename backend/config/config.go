@@ -13,6 +13,11 @@ type Config struct {
 	SpotifyClientID     string
 	SpotifyClientSecret string
 	SpotifyRedirectURI  string
+	DBHost              string
+	DBPort              string
+	DBUser              string
+	DBName              string
+	DBPassword          string
 }
 
 func getEnv(key, fallack string) string {
@@ -38,5 +43,10 @@ func Load() (*Config, error) {
 		SpotifyClientID:     getEnv("SPOTIFY_CLIENT_ID", ""),
 		SpotifyClientSecret: getEnv("SPOTIFY_CLIENT_SECRET", ""),
 		SpotifyRedirectURI:  getEnv("SPOTIFY_REDIRECT_URI", ""),
+		DBHost:              getEnv("MYSQL_HOST", ""),
+		DBPort:              getEnv("MYSQL_PORT", ""),
+		DBUser:              getEnv("MYSQL_USER", ""),
+		DBName:              getEnv("MYSQL_DATABASE", ""),
+		DBPassword:          getEnv("MYSQL_PASSWORD", ""),
 	}, nil
 }
