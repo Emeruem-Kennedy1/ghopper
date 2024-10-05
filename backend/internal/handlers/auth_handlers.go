@@ -30,7 +30,7 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 		}
 
 		// create or update user in the database
-		user, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
+		user, token, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create or update user"})
 			return
@@ -38,6 +38,10 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 
 		// TODO: Create jwt token and send it back to the client
 
-		ctx.JSON(http.StatusOK, gin.H{"user": user})
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "Successfully authenticated",
+			"user":    user,
+			"token":   token,
+		})
 	}
 }

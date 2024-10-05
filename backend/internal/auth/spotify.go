@@ -60,12 +60,13 @@ func (sa *SpotifyAuth) GetUserInfo(client *spotify.Client) (*spotify.PrivateUser
 	return user, nil
 }
 
-func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spotifyUser spotify.PrivateUser) (*models.User, error) {
+func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spotifyUser spotify.PrivateUser) (*models.User, string, error) {
 	user := &models.User{
 		ID:          spotifyUser.ID,
 		DisplayName: spotifyUser.DisplayName,
 		Email:       spotifyUser.Email,
 		Country:     spotifyUser.Country,
+		SpotifyURI:  string(spotifyUser.URI),
 	}
 
 	if len(spotifyUser.Images) > 0 {
@@ -74,9 +75,14 @@ func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spot
 
 	err := userRepo.UpsertUser(user)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create or update user: %v", err)
+		return nil, "", fmt.Errorf("failed to create or update user: %v", err)
 	}
 
-	return user, nil
+	token, err := GenerateToken(user)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to generate token: %v", err)
+	}
+
+	return user, token, nil
 
 }

@@ -18,6 +18,7 @@ type Config struct {
 	DBUser              string
 	DBName              string
 	DBPassword          string
+	JWTSecret           string
 }
 
 func getEnv(key, fallack string) string {
@@ -48,5 +49,6 @@ func Load() (*Config, error) {
 		DBUser:              getEnv("MYSQL_USER", ""),
 		DBName:              getEnv("MYSQL_DATABASE", ""),
 		DBPassword:          getEnv("MYSQL_PASSWORD", ""),
+		JWTSecret:           getEnv("JWT_SECRET", ""),
 	}, nil
 }

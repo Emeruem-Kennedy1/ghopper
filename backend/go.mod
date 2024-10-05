@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/zmb3/spotify v1.3.0
 	gorm.io/driver/mysql v1.5.7
