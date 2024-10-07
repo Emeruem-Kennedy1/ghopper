@@ -49,7 +49,7 @@ backend-shell:
 frontend-shell:
 	$(DOCKER_COMPOSE_DEV) exec frontend sh
 
-# database migrations
+
 
 
 # help
