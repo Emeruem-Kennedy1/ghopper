@@ -8,14 +8,16 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/handlers"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/middleware"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	router      *gin.Engine
-	config      *config.Config
-	spotifyAuth *auth.SpotifyAuth
-	userRepo    *repository.UserRepository
+	router        *gin.Engine
+	config        *config.Config
+	spotifyAuth   *auth.SpotifyAuth
+	userRepo      *repository.UserRepository
+	cleintManager *services.ClientManager
 }
 
 func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server, error) {
@@ -30,10 +32,11 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server
 	}
 
 	s := &Server{
-		router:      r,
-		config:      cfg,
-		spotifyAuth: spotifyAuth,
-		userRepo:    userRepo,
+		router:        r,
+		config:        cfg,
+		spotifyAuth:   spotifyAuth,
+		userRepo:      userRepo,
+		cleintManager: services.NewClientManager(),
 	}
 
 	s.setupRoutes()
@@ -43,12 +46,13 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server
 func (s *Server) setupRoutes() {
 	s.router.GET("/ping", handlers.Ping())
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
-	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo))
+	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo, s.cleintManager))
 
 	protected := s.router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/user", handlers.GetUser(s.userRepo))
+		protected.GET("/user/top-artists", handlers.GetUserTopArtists(s.cleintManager))
 	}
 }
 

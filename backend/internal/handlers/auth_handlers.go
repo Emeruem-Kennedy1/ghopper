@@ -9,6 +9,7 @@ import (
 
 	"github.com/Emeruem-Kennedy1/ghopper/internal/auth"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
+	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +20,7 @@ func SpotifyLogin(spotifyAuth *auth.SpotifyAuth) gin.HandlerFunc {
 	}
 }
 
-func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository) gin.HandlerFunc {
+func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository, clientManager *services.ClientManager) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		client, err := spotufyAuth.CallBack(ctx.Request)
 		if err != nil {
@@ -33,18 +34,14 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 			return
 		}
 
+		clientManager.StoreClient(spotifyUser.ID, client)
+    
 		// create or update user in the database
 		user, token, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create or update user"})
 			return
 		}
-
-		// ctx.JSON(http.StatusOK, gin.H{
-		// 	"message": "Successfully authenticated",
-		// 	"user":    user,
-		// 	"token":   token,
-		// })
 
 		// Create a map with the data you want to send
 		data := map[string]interface{}{
