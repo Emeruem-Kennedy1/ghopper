@@ -35,7 +35,7 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 		}
 
 		clientManager.StoreClient(spotifyUser.ID, client)
-
+    
 		// create or update user in the database
 		user, token, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
 		if err != nil {
