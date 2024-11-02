@@ -4,6 +4,7 @@ export type UserProfile = {
     email: string;
     uri: string;
     country: string;
+    image: string;
 };
 
 export type AuthContextType = {
