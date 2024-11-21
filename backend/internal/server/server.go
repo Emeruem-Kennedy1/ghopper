@@ -17,10 +17,11 @@ type Server struct {
 	config        *config.Config
 	spotifyAuth   *auth.SpotifyAuth
 	userRepo      *repository.UserRepository
+	songRepo      *repository.SongRepository
 	cleintManager *services.ClientManager
 }
 
-func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server, error) {
+func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository) (*Server, error) {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -36,6 +37,7 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server
 		config:        cfg,
 		spotifyAuth:   spotifyAuth,
 		userRepo:      userRepo,
+		songRepo:      songRepo,
 		cleintManager: services.NewClientManager(),
 	}
 
@@ -44,15 +46,18 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository) (*Server
 }
 
 func (s *Server) setupRoutes() {
-	s.router.GET("/ping", handlers.Ping())
+
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
 	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo, s.cleintManager))
 
 	protected := s.router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
+		protected.GET("/ping", handlers.Ping())
 		protected.GET("/user", handlers.GetUser(s.userRepo))
 		protected.GET("/user/top-artists", handlers.GetUserTopArtists(s.cleintManager))
+		protected.GET("/user/top-tracks", handlers.GetUserTopTracks(s.cleintManager))
+		protected.POST("/search", handlers.SearchSongByGenre(s.songRepo))
 	}
 }
 

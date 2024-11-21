@@ -1,0 +1,12 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main ./cmd/server"
+bin = "tmp/main"
+include_ext = ["go"]
+exclude_dir = ["assets", "tmp", "vendor"]
+delay = 1000 # ms
+
+[screen]
+clear_on_rebuild = true

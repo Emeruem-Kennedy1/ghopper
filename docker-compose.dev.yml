@@ -26,7 +26,7 @@ services:
       - GO_ENV=development
     volumes:
       - ./backend:/app
-    command: go run ./cmd/server/main.go
+    command: air -c .air.toml
     depends_on:
       - mariadb
 

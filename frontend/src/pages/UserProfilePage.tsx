@@ -1,18 +1,30 @@
+import { Flex, Space, Spin } from "antd";
 import { useAuth } from "../hooks/useAuth";
+import Title from "antd/es/typography/Title";
+import { TopArtists } from "../components/TopArtists";
+import { TopTracks } from "../components/TopTracks";
 
 const UserProfile = () => {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div>Loading profile...</div>;
+  if (isLoading) {
+    return (
+      <Flex style={{ textAlign: "center", padding: "50px" }}>
+        <Spin />
+      </Flex>
+    );
+  }
 
   return (
-    <div>
-      <h2>Welcome, {user?.display_name}</h2>
-      <p>Email: {user?.email}</p>
-      <p>Country: {user?.country}</p>
-      <p>Spotify URI: {user?.uri}</p>
-      <button onClick={logout}>Logout</button>
-    </div>
+    <Space
+      direction="vertical"
+      size="large"
+      style={{ width: "100%", padding: "24px" }}
+    >
+      <Title level={2}>Welcome, {user?.display_name}</Title>
+      <TopArtists />
+      <TopTracks />
+    </Space>
   );
 };
 
