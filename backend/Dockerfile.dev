@@ -8,6 +8,9 @@ COPY .env.production ./backend/cmd/server
 
 RUN go mod download
 
+RUN go install github.com/air-verse/air@latest
+
 COPY backend .
 
-CMD ["go", "run", "./cmd/server/main.go"]
+# CMD ["go", "run", "./cmd/server/main.go"]
+CMD ["air", "-c", ".air.toml"]

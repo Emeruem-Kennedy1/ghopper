@@ -29,6 +29,7 @@ const fetchUser = async () => {
         email: userData.email,
         uri: userData.uri,
         country: userData.country,
+        image: userData.profile_image,
     };
     return user;
 };

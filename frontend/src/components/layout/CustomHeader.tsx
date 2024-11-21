@@ -1,9 +1,9 @@
 import React from "react";
 import { Layout, Avatar, Dropdown, Space, theme } from "antd";
 import {
-  UserOutlined,
-  SettingOutlined,
   LogoutOutlined,
+  DashboardOutlined,
+  NodeIndexOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import Logo from "../common/Logo";
@@ -21,14 +21,14 @@ const CustomHeader: React.FC<{ children?: React.ReactNode }> = ({
 
   const menuItems = [
     {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: <Link to="/profile">Profile</Link>,
+      key: "dashboard",
+      icon: <DashboardOutlined />,
+      label: <Link to="/dashboard">Dashboard</Link>,
     },
     {
-      key: "settings",
-      icon: <SettingOutlined />,
-      label: <Link to="/settings">Settings</Link>,
+      key: "analysis",
+      icon: <NodeIndexOutlined />,
+      label: <Link to="/analysis">Analysis</Link>,
     },
     {
       key: "logout",
@@ -66,7 +66,7 @@ const CustomHeader: React.FC<{ children?: React.ReactNode }> = ({
         {children}
         {user && (
           <Dropdown menu={{ items: menuItems }} placement="bottomLeft">
-            <Avatar style={{ cursor: "pointer" }} icon={<UserOutlined />} />
+            <Avatar style={{ cursor: "pointer" }} src={user.image} />
           </Dropdown>
         )}
       </Space>

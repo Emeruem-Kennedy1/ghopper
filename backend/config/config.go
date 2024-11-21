@@ -18,6 +18,11 @@ type Config struct {
 	DBUser              string
 	DBName              string
 	DBPassword          string
+	SamplesDBUser       string
+	SamplesDBPassword   string
+	SamplesDBPort       string
+	SamplesDBHost       string
+	SamplesDBName       string
 	JWTSecret           string
 }
 
@@ -50,5 +55,10 @@ func Load() (*Config, error) {
 		DBName:              getEnv("MYSQL_DATABASE", ""),
 		DBPassword:          getEnv("MYSQL_PASSWORD", ""),
 		JWTSecret:           getEnv("JWT_SECRET", ""),
+		SamplesDBUser:       getEnv("SAMPLES_DB_USER", ""),
+		SamplesDBPassword:   getEnv("SAMPLES_DB_PASSWORD", ""),
+		SamplesDBPort:       getEnv("SAMPLES_DB_PORT", ""),
+		SamplesDBHost:       getEnv("SAMPLES_DB_HOST", ""),
+		SamplesDBName:       getEnv("SAMPLES_DB_NAME", ""),
 	}, nil
 }
