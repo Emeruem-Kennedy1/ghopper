@@ -54,3 +54,7 @@ go.work.sum
 
 # self guide readme file
 dev-self-guide.md
+
+tmp/
+
+secrets.yaml
