@@ -56,3 +56,5 @@ go.work.sum
 dev-self-guide.md
 
 tmp/
+
+secrets.yaml
