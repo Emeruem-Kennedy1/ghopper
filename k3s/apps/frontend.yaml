@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: frontend:latest # TODO: Change this to the docker image from dockerhub
+        image: kennedyemeruem/ghopper-frontend:latest
         ports:
-        - containerPort: 80
+        - containerPort: 3000
         envFrom:
         - secretRef:
             name: app-secrets
@@ -39,4 +39,4 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 3000

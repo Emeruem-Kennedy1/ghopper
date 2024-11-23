@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: backend:latest # TODO: Change to image from dockerhub
+        image: kennedyemeruem/ghopper-backend:latest
         ports:
         - containerPort: 9797
         envFrom:
@@ -39,5 +39,5 @@ spec:
     app: backend
   ports:
   - protocol: TCP
-    port: 9898
+    port: 9797
     targetPort: 9797
