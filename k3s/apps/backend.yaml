@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: kennedyemeruem/ghopper-backend:latest
+        image: ghcr.io/emeruem-kennedy1/ghopper/backend:latest
         ports:
         - containerPort: 9797
         envFrom:
