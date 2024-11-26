@@ -24,7 +24,6 @@ type Config struct {
 	SamplesDBHost       string
 	SamplesDBName       string
 	JWTSecret           string
-	FrontendURL         string
 }
 
 func getEnv(key, fallack string) string {
@@ -61,6 +60,5 @@ func Load() (*Config, error) {
 		SamplesDBPort:       getEnv("SAMPLES_DB_PORT", ""),
 		SamplesDBHost:       getEnv("SAMPLES_DB_HOST", ""),
 		SamplesDBName:       getEnv("SAMPLES_DB_NAME", ""),
-		FrontendURL:         getEnv("FRONTEND_URL", ""),
 	}, nil
 }

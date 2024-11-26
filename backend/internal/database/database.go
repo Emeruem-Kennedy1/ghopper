@@ -67,8 +67,7 @@ func initSamplesDB(cfg *config.Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to samples database: %v", err)
 	}
-	
-	// TODO: change the connection env variables to a replica of the sampledb on my laptop
+
 	// test connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping samples database: %v", err)

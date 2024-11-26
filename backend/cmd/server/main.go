@@ -28,6 +28,20 @@ func main() {
 	// init and start server
 	s, err := server.NewServer(cfg, userRepo, songRepo)
 
+	// songQuery := models.SongQuery{
+	// 	Title:  "Why You Wanna Trip on Me",
+	// 	Artist: "Michael Jackson",
+	// }
+
+	// results, any_err := songRepo.FindSongsByGenreBFS([]models.SongQuery{songQuery}, "Rap", 2)
+	// if any_err != nil {
+	// 	log.Fatalf("failed to search songs: %v", err)
+	// }
+	// fmt.Printf("Results: %v\n", results)
+	// for _, result := range results {
+	// 	fmt.Printf("Found song %s at distance %d\n", result.MatchedSong.Title, result.Distance)
+	// }
+
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
 	}

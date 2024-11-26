@@ -48,7 +48,7 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo
 func (s *Server) setupRoutes() {
 
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
-	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo, s.cleintManager, s.config))
+	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo, s.cleintManager))
 
 	protected := s.router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
