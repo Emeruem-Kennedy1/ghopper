@@ -66,22 +66,40 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PI_SSH_PRIVATE_KEY }}
 
-      - name: Deploy to K3s
+      - name: Test SSH Connection
         env:
           PI_HOST: ${{ secrets.PI_HOST }}
           PI_USERNAME: ${{ secrets.PI_USERNAME }}
         run: |
-          # Add host key verification
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $PI_HOST >> ~/.ssh/authorized_keys
+          # Enable verbose SSH output
+          set -x
           
-          # Ensure the remote directory exists
+          # Create .ssh directory
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # Add host key
+          ssh-keyscan -H $PI_HOST >> ~/.ssh/authorized_keys 2>/dev/null
+          
+          # Test SSH connection
+          ssh -v $PI_USERNAME@$PI_HOST "echo 'SSH connection successful'"
+
+      - name: Deploy to K3s
+        if: success()
+        env:
+          PI_HOST: ${{ secrets.PI_HOST }}
+          PI_USERNAME: ${{ secrets.PI_USERNAME }}
+        run: |
+          # Enable error handling
+          set -e
+          
+          echo "Creating deployment directory..."
           ssh $PI_USERNAME@$PI_HOST "mkdir -p ~/k3s-deployment"
           
-          # Copy the k3s configuration files
-          scp -r k3s/* $PI_USERNAME@$PI_HOST:~/k3s-deployment/
+          echo "Copying k3s configuration files..."
+          scp -v -r k3s/* $PI_USERNAME@$PI_HOST:~/k3s-deployment/
           
-          # Apply the configurations
+          echo "Applying kubernetes configurations..."
           ssh $PI_USERNAME@$PI_HOST "cd ~/k3s-deployment && \
             kubectl apply -f config/secrets.yaml && \
             kubectl apply -f apps/"
