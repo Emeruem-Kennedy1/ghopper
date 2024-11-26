@@ -73,7 +73,7 @@ jobs:
         run: |
           # Add host key verification
           mkdir -p ~/.ssh
-          ssh-keyscan -H $PI_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H $PI_HOST >> ~/.ssh/authorized_keys
           
           # Ensure the remote directory exists
           ssh $PI_USERNAME@$PI_HOST "mkdir -p ~/k3s-deployment"
