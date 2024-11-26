@@ -1,11 +1,18 @@
-FROM node:20
+# frontend/Dockerfile
+FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY frontend/package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy frontend files
 COPY frontend .
+
+# Expose the port
+EXPOSE 3000
 
 CMD ["npm", "run", "dev"]

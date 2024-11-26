@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY backend/go.mod backend/go.sum ./
 
-COPY .env.production ./backend/cmd/server
-
 RUN go mod download
 
 RUN go install github.com/air-verse/air@latest

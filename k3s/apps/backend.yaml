@@ -1,0 +1,43 @@
+# k3s/apps/backend.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: kennedyemeruem/ghopper-backend:latest
+        ports:
+        - containerPort: 9797
+        envFrom:
+        - secretRef:
+            name: app-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: default
+spec:
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port: 9797
+    targetPort: 9797

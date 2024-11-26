@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/Emeruem-Kennedy1/ghopper/config"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/auth"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
@@ -20,7 +21,7 @@ func SpotifyLogin(spotifyAuth *auth.SpotifyAuth) gin.HandlerFunc {
 	}
 }
 
-func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository, clientManager *services.ClientManager) gin.HandlerFunc {
+func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository, clientManager *services.ClientManager, cfg *config.Config) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		client, err := spotufyAuth.CallBack(ctx.Request)
 		if err != nil {
@@ -53,7 +54,7 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 		// Convert the data to JSON
 		jsonData, err := json.Marshal(data)
 		if err != nil {
-			redirectWithError(ctx, "Failed to process user data")
+			redirectWithError(ctx, "Failed to process user data", cfg)
 			return
 		}
 
@@ -61,14 +62,14 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 		encodedData := base64.URLEncoding.EncodeToString(jsonData)
 
 		// Redirect to your frontend URL with the encoded data
-		frontendURL := "http://localhost:51920/auth-callback" // TODO: Put this into the config
+		frontendURL := cfg.FrontendURL
 		redirectURL := fmt.Sprintf("%s?data=%s", frontendURL, url.QueryEscape(encodedData))
 		ctx.Redirect(http.StatusTemporaryRedirect, redirectURL)
 	}
 }
 
-func redirectWithError(ctx *gin.Context, errorMessage string) {
-	frontendURL := "http://localhost:51920/auth-callback"
+func redirectWithError(ctx *gin.Context, errorMessage string, cfg *config.Config) {
+	frontendURL := cfg.FrontendURL
 	redirectURL := fmt.Sprintf("%s?error=%s", frontendURL, url.QueryEscape(errorMessage))
 	ctx.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
