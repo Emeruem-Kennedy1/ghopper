@@ -61,45 +61,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
         with:
-          ssh-private-key: ${{ secrets.PI_SSH_PRIVATE_KEY }}
+          version: 'latest'
 
-      - name: Test SSH Connection
-        env:
-          PI_HOST: ${{ secrets.PI_HOST }}
-          PI_USERNAME: ${{ secrets.PI_USERNAME }}
+      - name: Set up kubeconfig
         run: |
-          # Enable verbose SSH output
-          set -x
-          
-          # Create .ssh directory
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          
-          # Add host key
-          ssh-keyscan -H $PI_HOST >> ~/.ssh/authorized_keys 2>/dev/null
-          
-          # Test SSH connection
-          ssh -v $PI_USERNAME@$PI_HOST "echo 'SSH connection successful'"
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
-      - name: Deploy to K3s
-        if: success()
-        env:
-          PI_HOST: ${{ secrets.PI_HOST }}
-          PI_USERNAME: ${{ secrets.PI_USERNAME }}
+      - name: Verify kubectl configuration
+        run: kubectl get nodes
+
+      - name: Deploy to k3s
         run: |
-          # Enable error handling
-          set -e
+          # Apply secrets first
+          kubectl apply -f k3s/config/secrets.yaml
           
-          echo "Creating deployment directory..."
-          ssh $PI_USERNAME@$PI_HOST "mkdir -p ~/k3s-deployment"
+          # Apply all other resources
+          kubectl apply -f k3s/apps/
           
-          echo "Copying k3s configuration files..."
-          scp -v -r k3s/* $PI_USERNAME@$PI_HOST:~/k3s-deployment/
+          # Wait for deployments to roll out
+          kubectl -n default rollout status deployment/frontend
+          kubectl -n default rollout status deployment/backend
+
+      - name: Verify deployments
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployments
           
-          echo "Applying kubernetes configurations..."
-          ssh $PI_USERNAME@$PI_HOST "cd ~/k3s-deployment && \
-            kubectl apply -f config/secrets.yaml && \
-            kubectl apply -f apps/"
+          echo "Checking pods status..."
+          kubectl get pods
