@@ -1,39 +1,15 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, ReactNode, useCallback } from "react";
-import { getToken, removeToken, storeToken } from "../utils/auth";
+import { removeToken, storeToken } from "../utils/auth";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContextType, UserProfile } from "../types/auth";
+import fetchUser from "../services/userService";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
-
-const fetchUser = async () => {
-  const token = getToken();
-  if (!token) return null;
-
-  const response = await axios.get(`api/api/user`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (response.status !== 200) {
-    throw new Error("Failed to fetch user");
-  }
-  const userData = response.data.user;
-  const user: UserProfile = {
-    id: userData.id,
-    display_name: userData.display_name,
-    email: userData.email,
-    uri: userData.uri,
-    country: userData.country,
-    image: userData.profile_image,
-  };
-  return user;
-};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
@@ -71,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           queryClient.clear();
           // Handle the logout
           logout();
-          // You might want to preserve the intended destination
+          // preserve the intended destination
           const destination = location.pathname;
           if (destination !== "/login") {
             navigate("/login", {
