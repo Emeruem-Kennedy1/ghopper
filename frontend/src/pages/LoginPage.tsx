@@ -1,21 +1,35 @@
 import { SpotifyOutlined } from "@ant-design/icons";
-import { Button, Col, Layout, Row } from "antd";
+import { Alert, Button, Col, Layout, Row } from "antd";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Content } from "antd/es/layout/layout";
 import { config } from "../config";
 
+interface LocationState {
+  error?: string;
+  returnTo?: string;
+}
+
 const LoginPage = () => {
   const location = useLocation();
-  const error = location.state?.error;
+  const { error, returnTo } = (location.state as LocationState) || {};
   const { user } = useAuth();
 
   const handleSpotifyLogin = () => {
+    // Store the return path in localStorage before redirecting
+    if (returnTo) {
+      localStorage.setItem("returnTo", returnTo);
+    }
     window.location.href = `api/auth/spotify/login`;
   };
 
   if (user) {
-    return <Navigate to="/" replace />;
+    // Check if there's a stored return path
+    const storedReturnTo = localStorage.getItem("returnTo");
+    // Clean up the stored path
+    localStorage.removeItem("returnTo");
+    // Redirect to the stored path or home
+    return <Navigate to={storedReturnTo || "/"} replace />;
   }
 
   return (
@@ -29,8 +43,16 @@ const LoginPage = () => {
         }}
       >
         <Row>
-          <Col>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+          <Col style={{ width: "100%", maxWidth: 400 }}>
+            {error && (
+              <Alert
+                message="Authentication Error"
+                description={error}
+                type="error"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )}
             <Button
               icon={<SpotifyOutlined />}
               type="primary"
