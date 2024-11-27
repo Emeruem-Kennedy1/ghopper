@@ -3,35 +3,36 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, ReactNode, useCallback } from "react";
 import { getToken, removeToken, storeToken } from "../utils/auth";
 import axios from "axios";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContextType, UserProfile } from "../types/auth";
 
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 const fetchUser = async () => {
-    const token = getToken();
-    if (!token) return null;
+  const token = getToken();
+  if (!token) return null;
 
-    const response = await axios.get(`api/api/user`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+  const response = await axios.get(`api/api/user`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    if (response.status !== 200) {
-        throw new Error('Failed to fetch user');
-    }
-    const userData = response.data.user
-    const user: UserProfile = {
-        id: userData.id,
-        display_name: userData.display_name,
-        email: userData.email,
-        uri: userData.uri,
-        country: userData.country,
-        image: userData.profile_image,
-    };
-    return user;
+  if (response.status !== 200) {
+    throw new Error("Failed to fetch user");
+  }
+  const userData = response.data.user;
+  const user: UserProfile = {
+    id: userData.id,
+    display_name: userData.display_name,
+    email: userData.email,
+    uri: userData.uri,
+    country: userData.country,
+    image: userData.profile_image,
+  };
+  return user;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

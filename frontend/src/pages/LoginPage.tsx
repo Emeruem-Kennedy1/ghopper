@@ -29,7 +29,7 @@ const LoginPage = () => {
     // Clean up the stored path
     localStorage.removeItem("returnTo");
     // Redirect to the stored path or home
-    return <Navigate to={storedReturnTo || "/"} replace />
+    return <Navigate to={storedReturnTo || "/"} replace />;
   }
 
   return (
