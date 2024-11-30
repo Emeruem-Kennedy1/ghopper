@@ -86,3 +86,7 @@ func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spot
 	return user, token, nil
 
 }
+
+func (sa *SpotifyAuth) GetAuthenticator() spotify.Authenticator {
+	return sa.authenticator
+}

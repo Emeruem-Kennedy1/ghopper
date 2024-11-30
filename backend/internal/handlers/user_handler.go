@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
@@ -61,7 +62,7 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 	}
 }
 
-func GetUserTopTracks(clientManager *services.ClientManager) gin.HandlerFunc {
+func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *services.SpotifyService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -79,6 +80,13 @@ func GetUserTopTracks(clientManager *services.ClientManager) gin.HandlerFunc {
 		timeRange := "long"
 
 		tracksRes, err := client.CurrentUsersTopTracksOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
+		// search for a song
+		song, iserr := spotifyService.GetSongURL(userID.(string), "Think about it", "Lyn Collins")
+		if iserr != nil {
+			fmt.Println("Error: ", iserr)
+		}
+		fmt.Println("Song: ", song)
+
 		if err != nil {
 			ctx.JSON(500, gin.H{"error": "Failed to get user's top tracks"})
 			return
