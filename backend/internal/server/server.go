@@ -66,6 +66,7 @@ func (s *Server) setupRoutes() {
 		protected.GET("/user/top-artists", handlers.GetUserTopArtists(s.cleintManager))
 		protected.GET("/user/top-tracks", handlers.GetUserTopTracks(s.cleintManager, s.spotifyService))
 		protected.POST("/search", handlers.SearchSongByGenre(s.songRepo))
+		protected.POST("/toptracks-analysis", handlers.AnalyzeSongsGivenGenre(s.songRepo, s.cleintManager, s.spotifyService))
 	}
 }
 

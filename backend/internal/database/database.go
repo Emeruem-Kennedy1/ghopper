@@ -44,7 +44,7 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
-	db.AutoMigrate(&models.User{}, &models.Song{})
+	db.AutoMigrate(&models.User{}, &models.Song{}, &models.Playlist{})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)

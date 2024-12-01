@@ -23,6 +23,7 @@ func NewSpotifyService(clientManager *ClientManager, spotifySongRepo *repository
 func (s *SpotifyService) GetSongURL(userID, name, artist string) (string, error) {
 	// First check if we have it in our database
 	song, err := s.spotifySongRepo.FindSongByNameAndArtist(name, artist)
+
 	if err != nil {
 		return "", fmt.Errorf("failed to find song by name and artist: %v", err)
 	}
@@ -40,24 +41,26 @@ func (s *SpotifyService) GetSongURL(userID, name, artist string) (string, error)
 	// Search on Spotify
 	query := fmt.Sprintf("track:%s artist:%s", name, artist)
 	results, err := client.Search(query, spotify.SearchTypeTrack)
-	fmt.Println(results.Tracks.Tracks[0].ID, results.Tracks.Tracks[0].Name, results.Tracks.Tracks[0].Artists[0].Name, results.Tracks.Tracks[0].URI)
 	if err != nil {
 		return "", fmt.Errorf("failed to search Spotify: %v", err)
 	}
 
+	// if we don't have any results return empty string
 	if len(results.Tracks.Tracks) == 0 {
-		return "", fmt.Errorf("no tracks found for %s by %s", name, artist)
+		return "", nil
 	}
 
 	// Get the first result
 	track := results.Tracks.Tracks[0]
+	baseUrl := "https://open.spotify.com/track/"
 
 	// Create new song record
 	newSong := &models.Song{
 		ID:         track.ID.String(),
 		Name:       name,
 		Artist:     artist,
-		SpotifyURL: string(track.URI),
+		SpotifyURL: baseUrl + track.ID.String(),
+		ImageURL:   track.Album.Images[0].URL,
 	}
 
 	// Save to database
@@ -66,4 +69,50 @@ func (s *SpotifyService) GetSongURL(userID, name, artist string) (string, error)
 	}
 
 	return newSong.SpotifyURL, nil
+}
+
+func (s *SpotifyService) CreatePlaylistFromSongs(userID string, songSpotifyIDs []spotify.ID, playlistName string, playlistDescription string) (string, error) {
+	client, exists := s.clientManager.GetClient(userID)
+	if !exists {
+		return "", fmt.Errorf("no spotify client found for user %s", userID)
+	}
+
+	user, err := client.CurrentUser()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current user: %v", err)
+	}
+
+	// check if playlist already exists in my database
+	playlist, _ := s.spotifySongRepo.FindPlaylistByNameAndUser(playlistName, userID)
+
+	if playlist != nil {
+		return playlist.URL, nil
+	}
+
+	// Create a new playlist 
+	newPlaylist, err := client.CreatePlaylistForUser(user.ID, playlistName, playlistDescription, false)
+	if err != nil {
+		return "", fmt.Errorf("failed to create playlist: %v", err)
+	}
+
+	// Add songs to the playlist
+	_, err = client.AddTracksToPlaylist(newPlaylist.ID, songSpotifyIDs...)
+	if err != nil {
+		return "", fmt.Errorf("failed to add tracks to playlist: %v", err)
+	}
+
+	// Save to database
+	newPlaylistRecord := &models.Playlist{
+		ID:          newPlaylist.ID.String(),
+		UserID:      userID,
+		Name:        playlistName,
+		Description: playlistDescription,
+		URL:         newPlaylist.ExternalURLs["spotify"],
+	}
+
+	if err := s.spotifySongRepo.SavePlaylist(newPlaylistRecord); err != nil {
+		return "", fmt.Errorf("failed to save playlist: %v", err)
+	}
+
+	return newPlaylist.ExternalURLs["spotify"], nil
 }
