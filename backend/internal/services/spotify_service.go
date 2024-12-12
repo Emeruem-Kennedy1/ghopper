@@ -13,6 +13,21 @@ type SpotifyService struct {
 	spotifySongRepo *repository.SpotifySongRepository
 }
 
+// removeDuplicates removes duplicate spotify IDs from the slice
+func removeDuplicates(ids []spotify.ID) []spotify.ID {
+	seen := make(map[spotify.ID]struct{}, len(ids))
+	result := make([]spotify.ID, 0, len(ids))
+
+	for _, id := range ids {
+		if _, ok := seen[id]; !ok {
+			seen[id] = struct{}{}
+			result = append(result, id)
+		}
+	}
+
+	return result
+}
+
 func NewSpotifyService(clientManager *ClientManager, spotifySongRepo *repository.SpotifySongRepository) *SpotifyService {
 	return &SpotifyService{
 		clientManager:   clientManager,
@@ -86,7 +101,17 @@ func (s *SpotifyService) CreatePlaylistFromSongs(userID string, songSpotifyIDs [
 	playlist, _ := s.spotifySongRepo.FindPlaylistByNameAndUser(playlistName, userID)
 
 	if playlist != nil {
+		// TODO: Validate that the user has this playlist in their spotify account
 		return playlist.URL, nil
+	}
+
+	// remove duplicate song ids
+	songSpotifyIDs = removeDuplicates(songSpotifyIDs)
+
+	// check if the songids are more than 100
+	if len(songSpotifyIDs) > 100 {
+		// limit to 100 songs
+		songSpotifyIDs = songSpotifyIDs[:100]
 	}
 
 	// Create a new playlist 

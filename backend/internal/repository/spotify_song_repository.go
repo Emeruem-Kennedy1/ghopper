@@ -28,10 +28,27 @@ func (r *SpotifySongRepository) FindSongByNameAndArtist(name, artist string) (*m
 	return &song, nil
 }
 
+// func (r *SpotifySongRepository) SaveSong(song *models.Song) error {
+// 	result := r.db.Create(song)
+// 	if result.Error != nil {
+// 		return fmt.Errorf("error saving song: %v", result.Error)
+// 	}
+// 	return nil
+// }
+
 func (r *SpotifySongRepository) SaveSong(song *models.Song) error {
-	result := r.db.Create(song)
-	if result.Error != nil {
-		return fmt.Errorf("error saving song: %v", result.Error)
+	// Check if song already exists
+	var existingSong models.Song
+	result := r.db.Where("id = ?", song.ID).First(&existingSong)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		result = r.db.Create(song)
+		if result.Error != nil {
+			return fmt.Errorf("error saving song: %v", result.Error)
+		}
+		return nil
+	} else if result.Error != nil {
+		return fmt.Errorf("error checking for existing song: %v", result.Error)
 	}
 	return nil
 }
