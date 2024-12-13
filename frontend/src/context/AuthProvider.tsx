@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, ReactNode, useCallback } from "react";
-import { removeToken, storeToken } from "../utils/auth";
+import { getToken, removeToken, storeToken } from "../utils/auth";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContextType, UserProfile } from "../types/auth";
@@ -22,6 +22,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     retry: false,
     staleTime: Infinity,
   });
+
+  useEffect(() => {
+    if (getToken()) {
+      queryClient.prefetchQuery({
+        queryKey: ["user"],
+        queryFn: fetchUser,
+      });
+    }
+  }, [queryClient]);
 
   const login = useCallback(
     (userData: UserProfile, token: string) => {

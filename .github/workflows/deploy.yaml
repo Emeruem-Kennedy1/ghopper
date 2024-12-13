@@ -60,3 +60,14 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ env.REPO_LOWER }}/backend:latest
           labels: ${{ steps.meta.outputs.labels }}
+  
+  deploy:
+    needs: build-and-push
+    runs-on: self-hosted 
+    
+    steps:
+      - name: Execute deploy script
+        run: |
+          cd ~/k3s-deployment
+          ./deploy.sh
+        shell: bash
