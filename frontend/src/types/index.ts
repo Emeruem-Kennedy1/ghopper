@@ -33,3 +33,11 @@ export type ArtistSearchData = {
   genre: string;
   maxDepth: number;
 };
+
+export type PlaylistResponse = {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  image: string;
+};

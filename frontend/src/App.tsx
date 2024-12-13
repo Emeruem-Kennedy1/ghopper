@@ -12,6 +12,7 @@ import CustomHeader from "./components/layout/CustomHeader";
 import { useEffect, useState } from "react";
 import { Content } from "antd/es/layout/layout";
 import MainLayout from "./components/layout/MainLayout";
+import {App as AntApp} from "antd";
 
 const queryClient = new QueryClient();
 
@@ -39,27 +40,29 @@ const App = () => {
     }
   };
   return (
-    <ConfigProvider theme={getTheme()}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AuthProvider>
-            <MainLayout>
-              <CustomHeader>
-                <Switch
-                  checked={currentTheme === "dark"}
-                  onChange={toggleTheme}
-                  checkedChildren="🌙"
-                  unCheckedChildren="☀️"
-                />
-              </CustomHeader>
-              <Content>
-                <AppRoutes />
-              </Content>
-            </MainLayout>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ConfigProvider>
+    <AntApp>
+      <ConfigProvider theme={getTheme()}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AuthProvider>
+              <MainLayout>
+                <CustomHeader>
+                  <Switch
+                    checked={currentTheme === "dark"}
+                    onChange={toggleTheme}
+                    checkedChildren="🌙"
+                    unCheckedChildren="☀️"
+                  />
+                </CustomHeader>
+                <Content>
+                  <AppRoutes />
+                </Content>
+              </MainLayout>
+            </AuthProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ConfigProvider>
+    </AntApp>
   );
 };
 

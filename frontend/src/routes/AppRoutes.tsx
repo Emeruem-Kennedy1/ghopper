@@ -5,11 +5,12 @@ import UserProfile from '../pages/UserProfilePage'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 import { AnalysisPage } from '../pages/AnalysisPage'
 import NotFoundPage from '../pages/NotFoundPage'
+import HomePage from '../pages/Homepage'
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<h1>Welcome to the G-Hopper App</h1>} />
+      <Route path="/" element={<HomePage/>} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth-callback" element={<AuthCallback />} />
       <Route

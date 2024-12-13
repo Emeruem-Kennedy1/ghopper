@@ -65,7 +65,15 @@ export const TopArtists = () => {
 
   return (
     <>
-      <Title level={3}>Your Top Artists</Title>
+      <Title
+        style={{
+          textAlign: "center",
+          marginBottom: "24px",
+        }}
+        level={3}
+      >
+        Your Top Artists
+      </Title>
       <div style={{ position: "relative", padding: "0 20px" }}>
         <CarouselArrow
           type="prev"
@@ -84,4 +92,3 @@ export const TopArtists = () => {
     </>
   );
 };
- 

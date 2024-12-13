@@ -18,7 +18,14 @@ type SpotifyAuth struct {
 }
 
 func NewSpotifyAuth(cfg *config.Config) (*SpotifyAuth, error) {
-	auth := spotify.NewAuthenticator(cfg.SpotifyRedirectURI, spotify.ScopeUserReadPrivate, spotify.ScopeUserReadEmail, spotify.ScopeUserTopRead)
+	auth := spotify.NewAuthenticator(
+		cfg.SpotifyRedirectURI,
+		spotify.ScopeUserReadPrivate,
+		spotify.ScopeUserReadEmail,
+		spotify.ScopeUserTopRead,
+		spotify.ScopePlaylistModifyPrivate,
+		spotify.ScopePlaylistModifyPublic,
+	)
 	auth.SetAuthInfo(cfg.SpotifyClientID, cfg.SpotifyClientSecret)
 
 	state, err := utils.GenerateRandomString(10)
@@ -85,4 +92,8 @@ func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spot
 
 	return user, token, nil
 
+}
+
+func (sa *SpotifyAuth) GetAuthenticator() spotify.Authenticator {
+	return sa.authenticator
 }

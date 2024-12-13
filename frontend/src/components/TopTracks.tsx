@@ -67,7 +67,15 @@ export const TopTracks = () => {
 
   return (
     <>
-      <Title level={3}>Here's what you've been listening to</Title>
+      <Title
+        style={{
+          textAlign: "center",
+          marginBottom: "24px",
+        }}
+        level={3}
+      >
+        Here's what you've been listening to
+      </Title>
       <div style={{ position: "relative", padding: "0 20px" }}>
         <CarouselArrow
           type="prev"

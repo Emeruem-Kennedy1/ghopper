@@ -13,15 +13,17 @@ import (
 )
 
 type Server struct {
-	router        *gin.Engine
-	config        *config.Config
-	spotifyAuth   *auth.SpotifyAuth
-	userRepo      *repository.UserRepository
-	songRepo      *repository.SongRepository
-	cleintManager *services.ClientManager
+	router          *gin.Engine
+	config          *config.Config
+	spotifyAuth     *auth.SpotifyAuth
+	userRepo        *repository.UserRepository
+	songRepo        *repository.SongRepository
+	spotifySongRepo *repository.SpotifySongRepository
+	cleintManager   *services.ClientManager
+	spotifyService  *services.SpotifyService
 }
 
-func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository) (*Server, error) {
+func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository, spotifySongRepo *repository.SpotifySongRepository) (*Server, error) {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -32,13 +34,19 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo
 		return nil, fmt.Errorf("failed to create spotify auth: %v", err)
 	}
 
+	clientManager := services.NewClientManager()
+
+	spotifyService := services.NewSpotifyService(clientManager, spotifySongRepo)
+
 	s := &Server{
-		router:        r,
-		config:        cfg,
-		spotifyAuth:   spotifyAuth,
-		userRepo:      userRepo,
-		songRepo:      songRepo,
-		cleintManager: services.NewClientManager(),
+		router:          r,
+		config:          cfg,
+		spotifyAuth:     spotifyAuth,
+		userRepo:        userRepo,
+		songRepo:        songRepo,
+		spotifySongRepo: spotifySongRepo,
+		cleintManager:   clientManager,
+		spotifyService:  spotifyService,
 	}
 
 	s.setupRoutes()
@@ -56,8 +64,11 @@ func (s *Server) setupRoutes() {
 		protected.GET("/ping", handlers.Ping())
 		protected.GET("/user", handlers.GetUser(s.userRepo))
 		protected.GET("/user/top-artists", handlers.GetUserTopArtists(s.cleintManager))
-		protected.GET("/user/top-tracks", handlers.GetUserTopTracks(s.cleintManager))
+		protected.GET("/user/top-tracks", handlers.GetUserTopTracks(s.cleintManager, s.spotifyService))
 		protected.POST("/search", handlers.SearchSongByGenre(s.songRepo))
+		protected.POST("/toptracks-analysis", handlers.AnalyzeSongsGivenGenre(s.songRepo, s.cleintManager, s.spotifyService))
+		protected.GET("/user/playlists", handlers.GetUserPlaylists(s.spotifySongRepo, s.spotifyService))
+		protected.DELETE("/user/playlists/:playlistID", handlers.DeletePlaylist(s.spotifyService, s.spotifySongRepo))
 	}
 }
 
