@@ -65,6 +65,10 @@ type GraphResponse struct {
 	Paths []PathInfo `json:"paths"`
 }
 
+type DeletePlaylistRequest struct {
+	PlaylistID string `json:"playlistID"`
+}
+
 type ArtistInfo struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
@@ -304,5 +308,47 @@ func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, graphResponse)
+	}
+}
+
+func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *repository.SpotifySongRepository) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID, exists := ctx.Get("userID")
+		if !exists {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		playlistID := ctx.Param("playlistID")
+
+		if playlistID == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "playlistID is required"})
+			return
+		}
+
+		playlist, err := spotifySongRepo.FindPlaylistByIDAndUser(playlistID, userID.(string))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to find playlist"})
+			return
+		}
+
+		if playlist == nil {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "playlist not found"})
+			return
+		}
+
+		err = spotifySongRepo.DeletePlaylist(playlist)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
+			return
+		}
+		
+		err = spotifyService.DeletePlaylist(userID.(string), playlist.ID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"message": "playlist deleted"})
 	}
 }

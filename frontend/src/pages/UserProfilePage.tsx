@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import Title from "antd/es/typography/Title";
 import { TopArtists } from "../components/TopArtists";
 import { TopTracks } from "../components/TopTracks";
+import { GeneratedPlaylists } from "../components/GeneratedPlaylists";
 
 const UserProfile = () => {
   const { user, isLoading } = useAuth();
@@ -21,7 +22,18 @@ const UserProfile = () => {
       size="large"
       style={{ width: "100%", padding: "24px" }}
     >
-      <Title level={2}>Welcome, {user?.display_name}</Title>
+      <Title
+        style={{
+          textAlign: "center",
+          marginBottom: "24px",
+        }}
+        level={1}
+      >
+        Welcome,
+        <span style={{ color: "#1db954" }}> {user?.display_name}</span>
+      </Title>
+
+      <GeneratedPlaylists />
       <TopArtists />
       <TopTracks />
     </Space>

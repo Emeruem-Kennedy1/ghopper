@@ -67,8 +67,8 @@ func (s *Server) setupRoutes() {
 		protected.GET("/user/top-tracks", handlers.GetUserTopTracks(s.cleintManager, s.spotifyService))
 		protected.POST("/search", handlers.SearchSongByGenre(s.songRepo))
 		protected.POST("/toptracks-analysis", handlers.AnalyzeSongsGivenGenre(s.songRepo, s.cleintManager, s.spotifyService))
-		// TODO: Add endpoint to allow users to delete their playlists we created
-		// TODO: Add endpoint to get user's playlists
+		protected.GET("/user/playlists", handlers.GetUserPlaylists(s.spotifySongRepo, s.spotifyService))
+		protected.DELETE("/user/playlists/:playlistID", handlers.DeletePlaylist(s.spotifyService, s.spotifySongRepo))
 	}
 }
 

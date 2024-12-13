@@ -18,4 +18,5 @@ type Playlist struct {
 	Name        string `gorm:"column:playlist_name"`
 	Description string `gorm:"column:description"`
 	URL         string `gorm:"column:url"`
+	Image       string `gorm:"column:image"`
 }

@@ -141,3 +141,35 @@ func (s *SpotifyService) CreatePlaylistFromSongs(userID string, songSpotifyIDs [
 
 	return newPlaylist.ExternalURLs["spotify"], nil
 }
+
+func (s *SpotifyService) DeletePlaylist (userID, playlistID string) error {
+	client, exists := s.clientManager.GetClient(userID)
+	if !exists {
+		return fmt.Errorf("no spotify client found for user %s", userID)
+	}
+
+	playlist, err := client.GetPlaylist(spotify.ID(playlistID))
+	if err != nil {
+		return fmt.Errorf("failed to get playlist: %v", err)
+	}
+
+	if err := client.UnfollowPlaylist(spotify.ID(userID), playlist.ID); err != nil {
+		return fmt.Errorf("failed to delete playlist: %v", err)
+	}
+
+	return nil
+}
+
+func (s *SpotifyService) GetPlaylistImageURL(userID, playlistID string) (string, error) {
+	client, exists := s.clientManager.GetClient(userID)
+	if !exists {
+		return "", fmt.Errorf("no spotify client found for user %s", userID)
+	}
+
+	playlist, err := client.GetPlaylist(spotify.ID(playlistID))
+	if err != nil {
+		return "", fmt.Errorf("failed to get playlist: %v", err)
+	}
+
+	return playlist.Images[0].URL, nil
+}
