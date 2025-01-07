@@ -109,34 +109,61 @@ const Homepage: React.FC = () => {
     GeneratePlaylistParams
   >({
     mutationFn: async ({ genre, userId }) => {
-      const response = await axios.post(
-        "/api/api/toptracks-analysis",
-        {
-          genre,
-          userId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      try {
+        const response = await axios.post(
+          "/api/api/toptracks-analysis",
+          { genre, userId },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          throw new Error(error.response?.data?.error || error.message);
         }
-      );
-
-      if (response.status !== 200) throw new Error(response.data.message);
-
-      return response.data;
+        throw error;
+      }
     },
     onSuccess: (data) => {
       console.log(data);
       setIsModalVisible(true);
     },
-    onError: (error) =>
-      messageApi.error(
-        error instanceof Error
-          ? error.message
-          : "An error occurred. Please try again."
-      ),
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : "";
+
+      switch (errorMessage) {
+        case "Unauthorized":
+          messageApi.error("Please log in again to continue");
+          navigate("/login");
+          break;
+        case "no songs found for user":
+          messageApi.info(
+            "We couldn't find any recent listening history. Try playing some songs first!"
+          );
+          break;
+        case "failed to get user's top tracks":
+          messageApi.error(
+            "Couldn't access your Spotify history. Please try again later."
+          );
+          break;
+        case "failed to create playlist":
+          messageApi.error(
+            "Failed to create playlist. Please try again later."
+          );
+          break;
+        case "genre is required":
+          messageApi.error("Please select a genre to continue");
+          break;
+        default:
+          messageApi.error(
+            errorMessage || "An unexpected error occurred. Please try again."
+          );
+      }
+    },
   });
 
   const handleGenreClick = (genreId: string) => {

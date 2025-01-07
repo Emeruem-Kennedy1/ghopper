@@ -12,6 +12,10 @@ export async function getTopArtists(): Promise<Artist[]> {
 
   const artists = response.data.artists.items;
 
+  if (!artists) {
+    return [];
+  }
+
   return artists.map((artist: TopArtistResponse) => ({
     id: artist.id,
     name: artist.name,

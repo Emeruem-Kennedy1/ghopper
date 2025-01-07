@@ -4,6 +4,7 @@ import {
   LogoutOutlined,
   DashboardOutlined,
   NodeIndexOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import Logo from "../common/Logo";
@@ -66,7 +67,11 @@ const CustomHeader: React.FC<{ children?: React.ReactNode }> = ({
         {children}
         {user && (
           <Dropdown menu={{ items: menuItems }} placement="bottomLeft">
-            <Avatar style={{ cursor: "pointer" }} src={user.image} />
+            <Avatar
+              style={{ cursor: "pointer" }}
+              src={user.image}
+              icon={!user.image && <UserOutlined />}
+            />
           </Dropdown>
         )}
       </Space>
