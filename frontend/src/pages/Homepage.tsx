@@ -128,8 +128,7 @@ const Homepage: React.FC = () => {
         throw error;
       }
     },
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       setIsModalVisible(true);
     },
     onError: (error) => {
