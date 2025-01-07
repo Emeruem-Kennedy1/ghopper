@@ -10,29 +10,30 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/zmb3/spotify"
+	"go.uber.org/zap"
 )
 
 var defaultGenrePlaylist = map[string]string{
-    "hip-hop":    "https://open.spotify.com/playlist/37i9dQZF1DXbkfWVLd8wE3?si=zqZ10XC9S2a095CXo8vW6Q",
-    "rap":        "https://open.spotify.com/playlist/0h9Gaqt2sNJ8M5aMV3h9BO?si=eB4jwKD0RFKXFz9WUoqXkA",
-    "R&B":        "https://open.spotify.com/playlist/37i9dQZF1DX04mASjTsvf0?si=r6S-aGh0Q7a2gb3nCFLemQ",
-    "electronic": "https://open.spotify.com/playlist/37i9dQZF1DWZBCPUIUs2iR?si=0REkYg79Sp6ghVwZnO0D6Q",
-    "dance":      "https://open.spotify.com/playlist/44dFP8mNyCi3UcBlyaRICH?si=_bljU3wzSH6h7tfYIGQ0cw",
-    "rock":       "https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U?si=nYX-RaKmTOqRcq73fyGEnQ",
-    "pop":        "https://open.spotify.com/playlist/37i9dQZF1EIctsc1CJao2L?si=6MJxt2cpQeyYtAMYg0RKJw",
-    "soul":       "https://open.spotify.com/playlist/73sIU7MIIIrSh664eygyjm?si=uKn9DEovQSqxb9P4l5u7RQ",
-    "funk":       "https://open.spotify.com/playlist/37i9dQZF1DWWvhKV4FBciw?si=1lzYUcgJR-6DBpoluxX2OA",
-    "disco":      "https://open.spotify.com/playlist/37i9dQZF1DX1MUPbVKMgJE?si=0nXq73dyRYGzdrrzEpd2Gw",
-    "jazz":       "https://open.spotify.com/playlist/4pIwPQAiZk4JGiWRzAaxwK?si=gxXRMeGQS_SeqeTLhTIGbQ",
-    "blues":      "https://open.spotify.com/playlist/0A1IHcqjyImN9uoHRsVtBn?si=f1z51sRCRx6gd7dPEfg5_g",
-    "reggae":     "https://open.spotify.com/playlist/37i9dQZF1EQpjs4F0vUZ1x?si=03B58nZISEeLoLDvbZ7jbw",
-    "dub":        "https://open.spotify.com/playlist/7AI62FuDUugLcg1IyVgMwU?si=GiAjkEvDT2mdloDn-zsKpQ",
-    "country":    "https://open.spotify.com/playlist/0QFaFgDQQiKBob7VIZIilG?si=kjNuzW4iS86D9Udo0VSeUA",
-    "folk":       "https://open.spotify.com/playlist/37i9dQZF1DWVmps5U8gHNv?si=ElAZI6eRS9OWr0EMMlh2Ow",
-    "world":      "https://open.spotify.com/playlist/37i9dQZF1DXcIme26eJxid?si=F382j4bBTjSa8oS2NC3C_w",
-    "latin":      "https://open.spotify.com/playlist/37i9dQZF1DX6ThddIjWuGT?si=B0r6U0sNQlS8DD1xC4g9ng",
-    "soundtrack": "https://open.spotify.com/playlist/3vDe8D64ytZRKXt0AsJT0B?si=4HFGEkdPRwSPajsaU23T2A",
-    "classical":  "https://open.spotify.com/playlist/2AIyLES2xJfPa6EOxmKySl?si=qpeStpIiQO--nr__oaFQCg",
+	"hip-hop":    "https://open.spotify.com/playlist/37i9dQZF1DXbkfWVLd8wE3?si=zqZ10XC9S2a095CXo8vW6Q",
+	"rap":        "https://open.spotify.com/playlist/0h9Gaqt2sNJ8M5aMV3h9BO?si=eB4jwKD0RFKXFz9WUoqXkA",
+	"R&B":        "https://open.spotify.com/playlist/37i9dQZF1DX04mASjTsvf0?si=r6S-aGh0Q7a2gb3nCFLemQ",
+	"electronic": "https://open.spotify.com/playlist/37i9dQZF1DWZBCPUIUs2iR?si=0REkYg79Sp6ghVwZnO0D6Q",
+	"dance":      "https://open.spotify.com/playlist/44dFP8mNyCi3UcBlyaRICH?si=_bljU3wzSH6h7tfYIGQ0cw",
+	"rock":       "https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U?si=nYX-RaKmTOqRcq73fyGEnQ",
+	"pop":        "https://open.spotify.com/playlist/37i9dQZF1EIctsc1CJao2L?si=6MJxt2cpQeyYtAMYg0RKJw",
+	"soul":       "https://open.spotify.com/playlist/73sIU7MIIIrSh664eygyjm?si=uKn9DEovQSqxb9P4l5u7RQ",
+	"funk":       "https://open.spotify.com/playlist/37i9dQZF1DWWvhKV4FBciw?si=1lzYUcgJR-6DBpoluxX2OA",
+	"disco":      "https://open.spotify.com/playlist/37i9dQZF1DX1MUPbVKMgJE?si=0nXq73dyRYGzdrrzEpd2Gw",
+	"jazz":       "https://open.spotify.com/playlist/4pIwPQAiZk4JGiWRzAaxwK?si=gxXRMeGQS_SeqeTLhTIGbQ",
+	"blues":      "https://open.spotify.com/playlist/0A1IHcqjyImN9uoHRsVtBn?si=f1z51sRCRx6gd7dPEfg5_g",
+	"reggae":     "https://open.spotify.com/playlist/37i9dQZF1EQpjs4F0vUZ1x?si=03B58nZISEeLoLDvbZ7jbw",
+	"dub":        "https://open.spotify.com/playlist/7AI62FuDUugLcg1IyVgMwU?si=GiAjkEvDT2mdloDn-zsKpQ",
+	"country":    "https://open.spotify.com/playlist/0QFaFgDQQiKBob7VIZIilG?si=kjNuzW4iS86D9Udo0VSeUA",
+	"folk":       "https://open.spotify.com/playlist/37i9dQZF1DWVmps5U8gHNv?si=ElAZI6eRS9OWr0EMMlh2Ow",
+	"world":      "https://open.spotify.com/playlist/37i9dQZF1DXcIme26eJxid?si=F382j4bBTjSa8oS2NC3C_w",
+	"latin":      "https://open.spotify.com/playlist/37i9dQZF1DX6ThddIjWuGT?si=B0r6U0sNQlS8DD1xC4g9ng",
+	"soundtrack": "https://open.spotify.com/playlist/3vDe8D64ytZRKXt0AsJT0B?si=4HFGEkdPRwSPajsaU23T2A",
+	"classical":  "https://open.spotify.com/playlist/2AIyLES2xJfPa6EOxmKySl?si=qpeStpIiQO--nr__oaFQCg",
 }
 
 type SongSearchRequest struct {
@@ -105,22 +106,32 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to analyze songs")
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 		client, clientExists := clientManager.GetClient(userID.(string))
 		if !clientExists {
+			zap.L().Warn("No Spotify client found for user",
+				zap.String("userID", userID.(string)))
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		var req TopTracksAnalysisRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
+			zap.L().Error("Invalid request format",
+				zap.Error(err),
+				zap.String("userID", userID.(string)),
+			)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 			return
 		}
 
 		if req.Genre == "" {
+			zap.L().Error("Genre not provided",
+				zap.String("userID", userID.(string)),
+			)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "genre is required"})
 			return
 		}
@@ -130,7 +141,10 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 
 		tracks, err := client.CurrentUsersTopTracksOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
 		if err != nil {
-			fmt.Println(err)
+			zap.L().Error("Failed to fetch top tracks from Spotify",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user's top tracks"})
 			return
 		}
@@ -144,8 +158,20 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 			})
 		}
 
+		if len(songs) == 0 {
+			zap.L().Warn("No songs found for user",
+				zap.String("userID", userID.(string)))
+
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "no songs found for user"})
+			return
+		}
+
 		analysisResults, err := songRepo.FindSongsByGenreBFS(songs, req.Genre, 2)
 		if err != nil {
+			zap.L().Error("Failed to analyze songs",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to analyze songs"})
 			return
 		}
@@ -168,6 +194,10 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 			url, err := spotifyService.GetSongURL(userID.(string), song.Title, song.Artist)
 
 			if err != nil {
+				zap.L().Error("Failed to get song URL",
+					zap.String("userID", userID.(string)),
+					zap.Error(err))
+
 				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get song url"})
 				return
 			}
@@ -190,6 +220,10 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 				Songs:    topTrackSongs,
 				Playlist: defaultGenrePlaylist[req.Genre],
 			}
+			zap.L().Info("No songs found for genre",
+				zap.String("userID", userID.(string)),
+				zap.String("genre", req.Genre),
+			)
 			ctx.JSON(http.StatusOK, response)
 			return
 		}
@@ -200,7 +234,10 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 		playlistURL, err := spotifyService.CreatePlaylistFromSongs(userID.(string), songIDs, playlistName, playlistDescription)
 
 		if err != nil {
-			fmt.Println(err)
+			zap.L().Error("Failed to create playlist",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create playlist"})
 			return
 		}
@@ -210,6 +247,11 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 			Playlist: playlistURL,
 		}
 
+		zap.L().Info("Successfully analyzed songs",
+			zap.String("userID", userID.(string)),
+			zap.Any("songs", songResults),
+			zap.String("genre", req.Genre),
+		)
 		ctx.JSON(http.StatusOK, response)
 	}
 }
@@ -218,11 +260,15 @@ func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req SongSearchRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
+			zap.L().Error("Invalid request format",
+				zap.Error(err))
+
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 			return
 		}
 
 		if req.Genre == "" {
+			zap.L().Error("Genre not provided")
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "genre is required"})
 			return
 		}
@@ -233,6 +279,9 @@ func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
 
 		results, err := songRepo.FindSongsByGenreBFS(req.Songs, req.Genre, req.MaxDepth)
 		if err != nil {
+			zap.L().Error("Failed to search songs",
+				zap.Error(err),
+			)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to search songs"})
 			return
 		}
@@ -307,6 +356,10 @@ func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
 			})
 		}
 
+		zap.L().Info("Successfully searched songs",
+			zap.Any("songs", req.Songs),
+			zap.String("genre", req.Genre),
+		)
 		ctx.JSON(http.StatusOK, graphResponse)
 	}
 }
@@ -315,6 +368,7 @@ func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *re
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to delete playlist")
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
@@ -322,29 +376,49 @@ func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *re
 		playlistID := ctx.Param("playlistID")
 
 		if playlistID == "" {
+			zap.L().Error("Playlist ID not provided")
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "playlistID is required"})
 			return
 		}
 
 		playlist, err := spotifySongRepo.FindPlaylistByIDAndUser(playlistID, userID.(string))
 		if err != nil {
+			zap.L().Error("Failed to find playlist",
+				zap.String("userID", userID.(string)),
+				zap.String("playlistID", playlistID),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to find playlist"})
 			return
 		}
 
 		if playlist == nil {
+			zap.L().Warn("Playlist not found",
+				zap.String("userID", userID.(string)),
+				zap.String("playlistID", playlistID))
+
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "playlist not found"})
 			return
 		}
 
 		err = spotifySongRepo.DeletePlaylist(playlist)
 		if err != nil {
+			zap.L().Error("Failed to delete playlist",
+				zap.String("userID", userID.(string)),
+				zap.String("playlistID", playlistID),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
 			return
 		}
-		
+
 		err = spotifyService.DeletePlaylist(userID.(string), playlist.ID)
 		if err != nil {
+			zap.L().Error("Failed to delete playlist from Spotify",
+				zap.String("userID", userID.(string)),
+				zap.String("playlistID", playlistID),
+				zap.Error(err))
+
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
 			return
 		}
