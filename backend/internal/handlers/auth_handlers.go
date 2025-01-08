@@ -12,6 +12,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func SpotifyLogin(spotifyAuth *auth.SpotifyAuth) gin.HandlerFunc {
@@ -25,21 +26,24 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 	return func(ctx *gin.Context) {
 		client, err := spotufyAuth.CallBack(ctx.Request)
 		if err != nil {
+			zap.L().Error("Failed to get client from callback", zap.Error(err))
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		spotifyUser, err := spotufyAuth.GetUserInfo(client)
 		if err != nil {
+			zap.L().Error("Failed to get user info", zap.Error(err))
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
 			return
 		}
 
 		clientManager.StoreClient(spotifyUser.ID, client)
-    
+
 		// create or update user in the database
 		user, token, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
 		if err != nil {
+			zap.L().Error("Failed to create or update user", zap.Error(err))
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create or update user"})
 			return
 		}
@@ -54,6 +58,7 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 		// Convert the data to JSON
 		jsonData, err := json.Marshal(data)
 		if err != nil {
+			zap.L().Error("Failed to marshal user data", zap.Error(err))
 			redirectWithError(ctx, "Failed to process user data", cfg)
 			return
 		}

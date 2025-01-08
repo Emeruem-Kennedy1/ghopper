@@ -65,6 +65,17 @@ export const TopTracks = () => {
     );
   }
 
+  if (!tracks || tracks.length === 0) {
+    return (
+      <Alert
+        type="info"
+        message="No top tracks"
+        description="You haven't listened to any tracks yet."
+        showIcon
+      />
+    );
+  }
+
   return (
     <>
       <Title

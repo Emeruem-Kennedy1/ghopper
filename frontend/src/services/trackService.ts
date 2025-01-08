@@ -13,6 +13,10 @@ export async function getTopTracks(): Promise<Track[]> {
 
   const tracks = response.data.tracks;
 
+  if (!tracks) {
+    return [];
+  }
+
   return tracks.map((track: TopTrackResponse) => ({
     id: track.id,
     name: track.name,

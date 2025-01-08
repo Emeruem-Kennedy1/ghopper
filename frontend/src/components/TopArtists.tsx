@@ -63,6 +63,17 @@ export const TopArtists = () => {
     );
   }
 
+  if (!artists || artists.length === 0) {
+    return (
+      <Alert
+        type="info"
+        message="No top artists found"
+        description="You have not listened to any artists yet."
+        showIcon
+      />
+    );
+  }
+
   return (
     <>
       <Title
