@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { getToken } from "../utils/auth";
 import axios from "axios";
-import spotifyGif from "../assets/spotify.gif";
+import loadingGif from "../assets/loading-animation.gif";
 import { SearchResultModal } from "../components/common/SearchResultModal";
 
 const { Title, Paragraph } = Typography;
@@ -154,7 +154,7 @@ const Homepage: React.FC = () => {
           <div style={loadingContentStyle}>
             <div>
               <img
-                src={spotifyGif}
+                src={loadingGif}
                 alt="Loading..."
                 style={{
                   width: "150px",
