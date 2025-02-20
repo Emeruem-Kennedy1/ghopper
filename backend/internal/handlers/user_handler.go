@@ -8,6 +8,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/zmb3/spotify"
+	"go.uber.org/zap"
 )
 
 type Song struct {
@@ -29,16 +30,21 @@ func GetUser(userRepo *repository.UserRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to get user")
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		user, err := userRepo.GetByID(userID.(string))
 		if err != nil {
+			zap.L().Error("Failed to retrieve user from database",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
 			ctx.JSON(500, gin.H{"error": "Failed to get user"})
 			return
 		}
 
+		zap.L().Info("Successfully retrieved user details", zap.String("userID", userID.(string)))
 		ctx.JSON(http.StatusOK, gin.H{"user": user})
 	}
 }
@@ -47,12 +53,15 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to get user's top artists")
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		client, exists := clientManager.GetClient(userID.(string))
 		if !exists {
+			zap.L().Warn("No Spotify client found for user",
+				zap.String("userID", userID.(string)))
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
@@ -62,11 +71,17 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 
 		artists, err := client.CurrentUsersTopArtistsOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
 		if err != nil {
+			zap.L().Error("Failed to fetch top artists from Spotify",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
 			ctx.JSON(500, gin.H{"error": "Failed to get user's top artists"})
 			return
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{"artists": artists})
+		zap.L().Info("Successfully retrieved user's top artists",
+			zap.String("userID", userID.(string)),
+			zap.Int("count", len(artists.Artists)))
 	}
 }
 
@@ -74,12 +89,15 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to get user's top tracks")
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		client, exists := clientManager.GetClient(userID.(string))
 		if !exists {
+			zap.L().Warn("No Spotify client found for user",
+				zap.String("userID", userID.(string)))
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
@@ -90,6 +108,9 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 		tracksRes, err := client.CurrentUsersTopTracksOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
 
 		if err != nil {
+			zap.L().Error("Failed to fetch top tracks from Spotify",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
 			ctx.JSON(500, gin.H{"error": "Failed to get user's top tracks"})
 			return
 		}
@@ -109,6 +130,10 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 			})
 		}
 
+		zap.L().Info("Successfully retrieved user's top tracks",
+			zap.String("userID", userID.(string)),
+			zap.Int("count", len(tracks)))
+
 		ctx.JSON(http.StatusOK, gin.H{"tracks": tracks})
 	}
 }
@@ -117,12 +142,17 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
+			zap.L().Warn("Unauthorized attempt to get user's playlists")
 			ctx.JSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		playlists, err := spotifySongRepo.GetUserPlaylists(userID.(string))
 		if err != nil {
+			zap.L().Error("Failed to fetch user's playlists from database",
+				zap.String("userID", userID.(string)),
+				zap.Error(err))
+
 			ctx.JSON(500, gin.H{"error": "Failed to get user's playlists"})
 			return
 		}
@@ -130,6 +160,8 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 		// Go through each playlist and get the images
 
 		if len(playlists) == 0 {
+			zap.L().Info("No playlists found for user",
+				zap.String("userID", userID.(string)))
 			ctx.JSON(http.StatusOK, gin.H{"playlists": playlistResponse, "message": "No playlists found"})
 			return
 		}
@@ -144,6 +176,10 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 			}
 
 			if err != nil {
+				zap.L().Error("Failed to get playlist image",
+					zap.String("userID", userID.(string)),
+					zap.String("playlistID", playlist.ID),
+					zap.Error(err))
 				ctx.JSON(500, gin.H{"error": "Failed to get playlist image"})
 				return
 			}
@@ -155,6 +191,10 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 				Image:       playlistImage,
 			})
 		}
+
+		zap.L().Info("Successfully retrieved user's playlists",
+			zap.String("userID", userID.(string)),
+			zap.Int("count", len(playlistResponse)))
 
 		ctx.JSON(http.StatusOK, gin.H{"playlists": playlistResponse})
 	}

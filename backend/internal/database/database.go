@@ -8,6 +8,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DBConnections struct {
@@ -42,7 +43,9 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		cfg.DBName,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 
 	db.AutoMigrate(&models.User{}, &models.Song{}, &models.Playlist{})
 

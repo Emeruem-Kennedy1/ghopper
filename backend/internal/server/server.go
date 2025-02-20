@@ -10,6 +10,7 @@ import (
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
 	"github.com/Emeruem-Kennedy1/ghopper/internal/services"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -21,14 +22,15 @@ type Server struct {
 	spotifySongRepo *repository.SpotifySongRepository
 	cleintManager   *services.ClientManager
 	spotifyService  *services.SpotifyService
+	logger          *zap.Logger
 }
 
-func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository, spotifySongRepo *repository.SpotifySongRepository) (*Server, error) {
+func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository, spotifySongRepo *repository.SpotifySongRepository, logger *zap.Logger) (*Server, error) {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	r := gin.Default()
+	r := gin.New()
 	spotifyAuth, err := auth.NewSpotifyAuth(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create spotify auth: %v", err)
@@ -47,7 +49,9 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo
 		spotifySongRepo: spotifySongRepo,
 		cleintManager:   clientManager,
 		spotifyService:  spotifyService,
+		logger:          logger,
 	}
+	gin.Logger()
 
 	s.setupRoutes()
 	return s, nil
