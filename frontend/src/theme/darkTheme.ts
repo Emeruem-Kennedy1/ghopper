@@ -4,7 +4,7 @@ export default {
     algorithm: theme.darkAlgorithm,
     token: {
         colorPrimary: '#00b96b',
-        svgBgContainer: "##fafafa",
+        svgBgContainer: "#fafafa",
         // Add other dark mode specific token overrides here
     },
     components: {

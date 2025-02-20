@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { Content } from "antd/es/layout/layout";
 import MainLayout from "./components/layout/MainLayout";
 import {App as AntApp} from "antd";
+import PrivacyFooter from "./components/layout/PrivacyFooter";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,11 @@ const App = () => {
   const [currentTheme, setCurrentTheme] = useState(() => {
     return localStorage.getItem("theme") || "default";
   });
+
+  useEffect(() => {
+    // Update data-theme attribute when theme changes
+    document.documentElement.setAttribute("data-theme", currentTheme);
+  }, [currentTheme]);
 
   useEffect(() => {
     localStorage.setItem("theme", currentTheme);
@@ -57,6 +63,7 @@ const App = () => {
                 <Content>
                   <AppRoutes />
                 </Content>
+                <PrivacyFooter />
               </MainLayout>
             </AuthProvider>
           </BrowserRouter>
