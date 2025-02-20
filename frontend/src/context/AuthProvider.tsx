@@ -5,7 +5,8 @@ import { getToken, removeToken, storeToken } from "../utils/auth";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContextType, UserProfile } from "../types/auth";
-import fetchUser from "../services/userService";
+import fetchUser, { deleteUser } from "../services/userService";
+import { Modal } from "antd";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -45,6 +46,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryClient.setQueryData(["user"], null);
     navigate("/login");
   }, [queryClient, navigate]);
+
+const deleteAccount = useCallback(async () => {
+  try {
+    await deleteUser();
+    // Clear all queries and user data
+    queryClient.clear();
+    removeToken();
+    // Navigate to login with success message
+    navigate("/login", {
+      state: { message: "Your account has been successfully deleted" },
+    });
+  } catch (error) {
+    console.error("Failed to delete account:", error);
+    // Show error but don't log user out
+    Modal.error({
+      title: "Account Deletion Failed",
+      content:
+        "There was a problem deleting your account. Please try again later.",
+    });
+  }
+}, [queryClient, navigate]);
 
   // Axios interceptor for 401 errors
   useEffect(() => {
@@ -118,6 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: user ?? null,
         login,
         logout,
+        deleteAccount,
         isLoading,
         handleAuthCallback,
       }}

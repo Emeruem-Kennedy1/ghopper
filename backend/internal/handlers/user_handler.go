@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
@@ -157,4 +158,36 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 
 		ctx.JSON(http.StatusOK, gin.H{"playlists": playlistResponse})
 	}
+}
+
+func DeleteUserAccount(userRepo *repository.UserRepository, spotifySongRepo *repository.SpotifySongRepository, clientManager *services.ClientManager) gin.HandlerFunc {
+    return func(ctx *gin.Context) {
+        userID, exists := ctx.Get("userID")
+        if !exists {
+            ctx.JSON(401, gin.H{"error": "Unauthorized"})
+            return
+        }
+
+		fmt.Println("Deleting user account")
+        // Delete all playlists associated with user
+        if err := spotifySongRepo.DeleteUserPlaylists(userID.(string)); err != nil {
+            ctx.JSON(500, gin.H{"error": "Failed to delete user playlists"})
+            return
+        }
+
+		fmt.Println("Removing user from client manager")
+        // Remove the client from clientManager
+        clientManager.RemoveClient(userID.(string))
+
+        // Delete the user
+		fmt.Println("Deleting user")
+        if err := userRepo.Delete(userID.(string)); err != nil {
+            ctx.JSON(500, gin.H{"error": "Failed to delete user account"})
+            return
+        }
+
+		fmt.Println("User account successfully deleted")
+
+        ctx.JSON(http.StatusOK, gin.H{"message": "Account successfully deleted"})
+    }
 }

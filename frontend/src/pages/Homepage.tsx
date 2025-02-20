@@ -127,8 +127,7 @@ const Homepage: React.FC = () => {
 
       return response.data;
     },
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       setIsModalVisible(true);
     },
     onError: (error) =>

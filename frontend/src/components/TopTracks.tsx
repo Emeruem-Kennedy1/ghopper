@@ -39,7 +39,6 @@ export const TopTracks = () => {
     data: tracks,
     isLoading,
     isError,
-    error,
   } = useQuery({
     queryKey: ["topTracks"],
     queryFn: getTopTracks,
@@ -54,7 +53,6 @@ export const TopTracks = () => {
   }
 
   if (isError) {
-    console.log("Error loading top tracks", error);
     return (
       <Alert
         type="error"
