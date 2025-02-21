@@ -1,15 +1,17 @@
 import React from "react";
-import { Layout, Avatar, Dropdown, Space, theme } from "antd";
+import { Layout, Avatar, Dropdown, Space, theme, Modal } from "antd";
 import {
   LogoutOutlined,
   DashboardOutlined,
   NodeIndexOutlined,
+  DeleteOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import Logo from "../common/Logo";
 import { useAuth } from "../../hooks/useAuth";
 import { config } from "../../config";
+import type { MenuProps } from "antd";
 
 const { Header } = Layout;
 const { useToken } = theme;
@@ -18,9 +20,21 @@ const CustomHeader: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
   const { token } = useToken();
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
 
-  const menuItems = [
+  const handleDeleteAccount = () => {
+    Modal.confirm({
+      title: "Delete Account",
+      content:
+        "Are you sure you want to delete your account? This action cannot be undone and will delete all your data including created playlists.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: deleteAccount,
+    });
+  };
+
+  const menuItems: MenuProps['items'] = [
     {
       key: "dashboard",
       icon: <DashboardOutlined />,
@@ -30,6 +44,16 @@ const CustomHeader: React.FC<{ children?: React.ReactNode }> = ({
       key: "analysis",
       icon: <NodeIndexOutlined />,
       label: <Link to="/analysis">Analysis</Link>,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "delete-account",
+      icon: <DeleteOutlined />,
+      label: "Delete Account",
+      danger: true,
+      onClick: handleDeleteAccount,
     },
     {
       key: "logout",

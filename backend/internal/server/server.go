@@ -73,6 +73,7 @@ func (s *Server) setupRoutes() {
 		protected.POST("/toptracks-analysis", handlers.AnalyzeSongsGivenGenre(s.songRepo, s.cleintManager, s.spotifyService))
 		protected.GET("/user/playlists", handlers.GetUserPlaylists(s.spotifySongRepo, s.spotifyService))
 		protected.DELETE("/user/playlists/:playlistID", handlers.DeletePlaylist(s.spotifyService, s.spotifySongRepo))
+		protected.DELETE("/user/account", handlers.DeleteUserAccount(s.userRepo, s.spotifySongRepo, s.cleintManager))
 	}
 }
 

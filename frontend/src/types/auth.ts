@@ -11,6 +11,7 @@ export type AuthContextType = {
     user: UserProfile | null;
     login: (userData: UserProfile, token: string) => void;
     logout: () => void;
+    deleteAccount: () => Promise<void>; // Add this line
     isLoading: boolean;
     handleAuthCallback: () => void;
 };

@@ -101,3 +101,7 @@ func (r *SpotifySongRepository) UpdatePlaylistImageURL(playlistImageURL string, 
 	}
 	return nil
 }
+
+func (r *SpotifySongRepository) DeleteUserPlaylists(userID string) error {
+	return r.db.Where("user_id = ?", userID).Delete(&models.Playlist{}).Error
+}

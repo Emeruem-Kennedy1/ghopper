@@ -27,4 +27,21 @@ const fetchUser = async () => {
   return user;
 };
 
+export const deleteUser = async () => {
+  const token = getToken();
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await axios.delete(`api/api/user/account`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status !== 200) {
+    throw new Error("Failed to delete user account");
+  }
+
+  return response.data;
+};
+
 export default fetchUser;

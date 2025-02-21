@@ -7,6 +7,7 @@ import (
 )
 
 type ClientManager struct {
+	mu      sync.Mutex
 	clients sync.Map
 }
 
@@ -29,4 +30,10 @@ func (cm *ClientManager) GetClient(userID string) (*spotify.Client, bool) {
 
 func (cm *ClientManager) DeleteClient(userID string) {
 	cm.clients.Delete(userID)
+}
+
+func (cm *ClientManager) RemoveClient(userID string) {
+    cm.mu.Lock()
+    defer cm.mu.Unlock()
+    cm.clients.Delete(userID)
 }
