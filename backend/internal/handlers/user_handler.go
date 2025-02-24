@@ -66,8 +66,8 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 			return
 		}
 
-		limit := 10
-		timeRange := "long"
+		limit := 25
+		timeRange := "short"
 
 		artists, err := client.CurrentUsersTopArtistsOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
 		if err != nil {
@@ -102,8 +102,8 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 			return
 		}
 
-		limit := 10
-		timeRange := "long"
+		limit := 25
+		timeRange := "short"
 
 		tracksRes, err := client.CurrentUsersTopTracksOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
 

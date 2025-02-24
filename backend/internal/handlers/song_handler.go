@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strings"
 
@@ -13,27 +14,85 @@ import (
 	"go.uber.org/zap"
 )
 
-var defaultGenrePlaylist = map[string]string{
-	"hip-hop":    "https://open.spotify.com/playlist/37i9dQZF1DXbkfWVLd8wE3?si=zqZ10XC9S2a095CXo8vW6Q",
-	"rap":        "https://open.spotify.com/playlist/0h9Gaqt2sNJ8M5aMV3h9BO?si=eB4jwKD0RFKXFz9WUoqXkA",
-	"R&B":        "https://open.spotify.com/playlist/37i9dQZF1DX04mASjTsvf0?si=r6S-aGh0Q7a2gb3nCFLemQ",
-	"electronic": "https://open.spotify.com/playlist/37i9dQZF1DWZBCPUIUs2iR?si=0REkYg79Sp6ghVwZnO0D6Q",
-	"dance":      "https://open.spotify.com/playlist/44dFP8mNyCi3UcBlyaRICH?si=_bljU3wzSH6h7tfYIGQ0cw",
-	"rock":       "https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U?si=nYX-RaKmTOqRcq73fyGEnQ",
-	"pop":        "https://open.spotify.com/playlist/37i9dQZF1EIctsc1CJao2L?si=6MJxt2cpQeyYtAMYg0RKJw",
-	"soul":       "https://open.spotify.com/playlist/73sIU7MIIIrSh664eygyjm?si=uKn9DEovQSqxb9P4l5u7RQ",
-	"funk":       "https://open.spotify.com/playlist/37i9dQZF1DWWvhKV4FBciw?si=1lzYUcgJR-6DBpoluxX2OA",
-	"disco":      "https://open.spotify.com/playlist/37i9dQZF1DX1MUPbVKMgJE?si=0nXq73dyRYGzdrrzEpd2Gw",
-	"jazz":       "https://open.spotify.com/playlist/4pIwPQAiZk4JGiWRzAaxwK?si=gxXRMeGQS_SeqeTLhTIGbQ",
-	"blues":      "https://open.spotify.com/playlist/0A1IHcqjyImN9uoHRsVtBn?si=f1z51sRCRx6gd7dPEfg5_g",
-	"reggae":     "https://open.spotify.com/playlist/37i9dQZF1EQpjs4F0vUZ1x?si=03B58nZISEeLoLDvbZ7jbw",
-	"dub":        "https://open.spotify.com/playlist/7AI62FuDUugLcg1IyVgMwU?si=GiAjkEvDT2mdloDn-zsKpQ",
-	"country":    "https://open.spotify.com/playlist/0QFaFgDQQiKBob7VIZIilG?si=kjNuzW4iS86D9Udo0VSeUA",
-	"folk":       "https://open.spotify.com/playlist/37i9dQZF1DWVmps5U8gHNv?si=ElAZI6eRS9OWr0EMMlh2Ow",
-	"world":      "https://open.spotify.com/playlist/37i9dQZF1DXcIme26eJxid?si=F382j4bBTjSa8oS2NC3C_w",
-	"latin":      "https://open.spotify.com/playlist/37i9dQZF1DX6ThddIjWuGT?si=B0r6U0sNQlS8DD1xC4g9ng",
-	"soundtrack": "https://open.spotify.com/playlist/3vDe8D64ytZRKXt0AsJT0B?si=4HFGEkdPRwSPajsaU23T2A",
-	"classical":  "https://open.spotify.com/playlist/2AIyLES2xJfPa6EOxmKySl?si=qpeStpIiQO--nr__oaFQCg",
+var genreGroups = map[string]string{
+	"hip-hop":    "Hip-Hop / Rap / R&B",
+	"rap":        "Hip-Hop / Rap / R&B",
+	"r&b":        "Hip-Hop / Rap / R&B",
+	"electronic": "Electronic / Dance",
+	"dance":      "Electronic / Dance",
+	"rock":       "Rock / Pop",
+	"pop":        "Rock / Pop",
+	"soul":       "Soul / Funk / Disco",
+	"funk":       "Soul / Funk / Disco",
+	"disco":      "Soul / Funk / Disco",
+	"jazz":       "Jazz / Blues",
+	"blues":      "Jazz / Blues",
+	"reggae":     "Reggae / Dub",
+	"dub":        "Reggae / Dub",
+	"country":    "Country / Folk",
+	"folk":       "Country / Folk",
+	"world":      "World / Latin",
+	"latin":      "World / Latin",
+	"soundtrack": "Soundtrack / Library",
+	"library":    "Soundtrack / Library",
+	"classical":  "Classical",
+}
+
+// Representative search genre for each group (for database queries)
+var searchGenres = map[string]string{
+	"Hip-Hop / Rap / R&B":  "hip-hop", // We can use any of hip-hop, rap, or r&b
+	"Electronic / Dance":   "electronic",
+	"Rock / Pop":           "rock",
+	"Soul / Funk / Disco":  "soul",
+	"Jazz / Blues":         "jazz",
+	"Reggae / Dub":         "reggae",
+	"Country / Folk":       "country",
+	"World / Latin":        "world",
+	"Soundtrack / Library": "soundtrack",
+	"Classical":            "classical",
+}
+
+var defaultGenrePlaylists = map[string][]string{
+	"hip-hop": {
+		"https://open.spotify.com/playlist/37i9dQZF1DXbkfWVLd8wE3?si=zqZ10XC9S2a095CXo8vW6Q",
+		"https://open.spotify.com/playlist/0h9Gaqt2sNJ8M5aMV3h9BO?si=eB4jwKD0RFKXFz9WUoqXkA",
+		"https://open.spotify.com/playlist/37i9dQZF1DX04mASjTsvf0?si=r6S-aGh0Q7a2gb3nCFLemQ",
+	},
+	"electronic": {
+		"https://open.spotify.com/playlist/37i9dQZF1DWZBCPUIUs2iR?si=0REkYg79Sp6ghVwZnO0D6Q",
+		"https://open.spotify.com/playlist/44dFP8mNyCi3UcBlyaRICH?si=_bljU3wzSH6h7tfYIGQ0cw",
+	},
+	"rock": {
+		"https://open.spotify.com/playlist/37i9dQZF1DWXRqgorJj26U?si=nYX-RaKmTOqRcq73fyGEnQ",
+		"https://open.spotify.com/playlist/37i9dQZF1EIctsc1CJao2L?si=6MJxt2cpQeyYtAMYg0RKJw",
+	},
+	"soul": {
+		"https://open.spotify.com/playlist/73sIU7MIIIrSh664eygyjm?si=uKn9DEovQSqxb9P4l5u7RQ",
+		"https://open.spotify.com/playlist/37i9dQZF1DWWvhKV4FBciw?si=1lzYUcgJR-6DBpoluxX2OA",
+		"https://open.spotify.com/playlist/37i9dQZF1DX1MUPbVKMgJE?si=0nXq73dyRYGzdrrzEpd2Gw",
+	},
+	"jazz": {
+		"https://open.spotify.com/playlist/4pIwPQAiZk4JGiWRzAaxwK?si=gxXRMeGQS_SeqeTLhTIGbQ",
+		"https://open.spotify.com/playlist/0A1IHcqjyImN9uoHRsVtBn?si=f1z51sRCRx6gd7dPEfg5_g",
+	},
+	"reggae": {
+		"https://open.spotify.com/playlist/37i9dQZF1EQpjs4F0vUZ1x?si=03B58nZISEeLoLDvbZ7jbw",
+		"https://open.spotify.com/playlist/7AI62FuDUugLcg1IyVgMwU?si=GiAjkEvDT2mdloDn-zsKpQ",
+	},
+	"country": {
+		"https://open.spotify.com/playlist/0QFaFgDQQiKBob7VIZIilG?si=kjNuzW4iS86D9Udo0VSeUA",
+		"https://open.spotify.com/playlist/37i9dQZF1DWVmps5U8gHNv?si=ElAZI6eRS9OWr0EMMlh2Ow",
+	},
+	"world": {
+		"https://open.spotify.com/playlist/37i9dQZF1DXcIme26eJxid?si=F382j4bBTjSa8oS2NC3C_w",
+		"https://open.spotify.com/playlist/37i9dQZF1DX6ThddIjWuGT?si=B0r6U0sNQlS8DD1xC4g9ng",
+	},
+	"soundtrack": {
+		"https://open.spotify.com/playlist/3vDe8D64ytZRKXt0AsJT0B?si=4HFGEkdPRwSPajsaU23T2A",
+	},
+	"classical": {
+		"https://open.spotify.com/playlist/2AIyLES2xJfPa6EOxmKySl?si=qpeStpIiQO--nr__oaFQCg",
+	},
 }
 
 type SongSearchRequest struct {
@@ -102,6 +161,30 @@ func transformToArtistInfo(artists []models.Artist) []ArtistInfo {
 	return result
 }
 
+// Helper function to normalize genre for playlist creation and display
+func normalizeGenre(genre string) string {
+	normalizedGenre := strings.ToLower(strings.TrimSpace(genre))
+	if groupName, exists := genreGroups[normalizedGenre]; exists {
+		return groupName
+	}
+	return normalizedGenre
+}
+
+// Helper function to get the database search genre
+func getSearchGenre(groupedGenre string) string {
+	if searchGenre, exists := searchGenres[groupedGenre]; exists {
+		return searchGenre
+	}
+	return strings.ToLower(strings.TrimSpace(groupedGenre))
+}
+
+func getRandomPlaylist(genre string) string {
+	if playlists, exists := defaultGenrePlaylists[genre]; exists && len(playlists) > 0 {
+		return playlists[rand.Intn(len(playlists))]
+	}
+	return "" // Return empty string if no playlist found
+}
+
 func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *services.ClientManager, spotifyService *services.SpotifyService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
@@ -166,7 +249,12 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 			return
 		}
 
-		analysisResults, err := songRepo.FindSongsByGenreBFS(songs, req.Genre, 2)
+		// Normalize genre for playlist creation and UI display
+		normalizedGenre := normalizeGenre(req.Genre)
+		// Get the single search genre for database lookup
+		searchGenre := getSearchGenre(normalizedGenre)
+
+		analysisResults, err := songRepo.FindSongsByGenreBFS(songs, searchGenre, 2)
 		if err != nil {
 			zap.L().Error("Failed to analyze songs",
 				zap.String("userID", userID.(string)),
@@ -218,7 +306,7 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 		if len(songIDs) == 0 {
 			response = TopTracksAnalysisResponse{
 				Songs:    topTrackSongs,
-				Playlist: defaultGenrePlaylist[req.Genre],
+				Playlist: getRandomPlaylist(searchGenre),
 			}
 			zap.L().Info("No songs found for genre",
 				zap.String("userID", userID.(string)),
@@ -229,8 +317,8 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 		}
 
 		// add the songs to a playlist
-		playlistName := fmt.Sprintf("Explore %s songs", req.Genre)
-		playlistDescription := fmt.Sprintf("Playlist of songs in the genre %s", req.Genre)
+		playlistName := fmt.Sprintf("Explore %s songs", normalizedGenre)
+		playlistDescription := fmt.Sprintf("Playlist of songs in the genre %s", normalizedGenre)
 		playlistURL, err := spotifyService.CreatePlaylistFromSongs(userID.(string), songIDs, playlistName, playlistDescription)
 
 		if err != nil {
