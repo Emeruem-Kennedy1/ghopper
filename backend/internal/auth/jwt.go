@@ -10,6 +10,14 @@ import (
 
 var jwtKey = []byte("my_secret_key")
 
+// Make the function a variable so it can be swapped in tests
+var GenerateTokenFunc = GenerateToken
+
+// SetJWTKey allows setting the JWT key for testing
+func SetJWTKey(key []byte) {
+	jwtKey = key
+}
+
 func GenerateToken(user *models.User) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &jwt.RegisteredClaims{

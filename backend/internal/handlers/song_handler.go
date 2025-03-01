@@ -185,7 +185,7 @@ func getRandomPlaylist(genre string) string {
 	return "" // Return empty string if no playlist found
 }
 
-func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *services.ClientManager, spotifyService *services.SpotifyService) gin.HandlerFunc {
+func AnalyzeSongsGivenGenre(songRepo repository.SongRepositoryInterface, clientManager services.ClientManagerInterface, spotifyService services.SpotifyServiceInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -344,7 +344,7 @@ func AnalyzeSongsGivenGenre(songRepo *repository.SongRepository, clientManager *
 	}
 }
 
-func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
+func SearchSongByGenre(songRepo repository.SongRepositoryInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req SongSearchRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -452,7 +452,7 @@ func SearchSongByGenre(songRepo *repository.SongRepository) gin.HandlerFunc {
 	}
 }
 
-func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *repository.SpotifySongRepository) gin.HandlerFunc {
+func DeletePlaylist(spotifyService services.SpotifyServiceInterface, spotifySongRepo repository.SpotifySongRepositoryInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -491,6 +491,7 @@ func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *re
 
 		err = spotifySongRepo.DeletePlaylist(playlist)
 		if err != nil {
+			fmt.Printf("Failed to delete playlist: %v\n", err)
 			zap.L().Error("Failed to delete playlist",
 				zap.String("userID", userID.(string)),
 				zap.String("playlistID", playlistID),
@@ -507,7 +508,7 @@ func DeletePlaylist(spotifyService *services.SpotifyService, spotifySongRepo *re
 				zap.String("playlistID", playlistID),
 				zap.Error(err))
 
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist from Spotify"})
 			return
 		}
 

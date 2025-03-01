@@ -12,6 +12,7 @@ type SpotifySongRepository struct {
 	db *gorm.DB
 }
 
+
 func NewSpotifySongRepository(db *gorm.DB) *SpotifySongRepository {
 	return &SpotifySongRepository{db: db}
 }

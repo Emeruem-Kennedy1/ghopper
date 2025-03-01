@@ -15,23 +15,28 @@ import (
 	"go.uber.org/zap"
 )
 
-func SpotifyLogin(spotifyAuth *auth.SpotifyAuth) gin.HandlerFunc {
+func SpotifyLogin(spotifyAuth auth.SpotifyAuthInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		url := spotifyAuth.AuthURL()
 		ctx.Redirect(http.StatusTemporaryRedirect, url)
 	}
 }
 
-func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRepository, clientManager *services.ClientManager, cfg *config.Config) gin.HandlerFunc {
+func SpotifyCallback(
+	spotifyAuth auth.SpotifyAuthInterface,
+	userRepo repository.UserRepositoryInterface,
+	clientManager services.ClientManagerInterface,
+	cfg *config.Config,
+) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		client, err := spotufyAuth.CallBack(ctx.Request)
+		client, err := spotifyAuth.CallBack(ctx.Request)
 		if err != nil {
 			zap.L().Error("Failed to get client from callback", zap.Error(err))
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		spotifyUser, err := spotufyAuth.GetUserInfo(client)
+		spotifyUser, err := spotifyAuth.GetUserInfo(client)
 		if err != nil {
 			zap.L().Error("Failed to get user info", zap.Error(err))
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
@@ -40,7 +45,7 @@ func SpotifyCallback(spotufyAuth *auth.SpotifyAuth, userRepo *repository.UserRep
 
 		clientManager.StoreClient(spotifyUser.ID, client)
 
-		// create or update user in the database
+		// create or update user in the database - use the interface directly
 		user, token, err := auth.CreateOrUpdateUserFromSpotifyData(userRepo, *spotifyUser)
 		if err != nil {
 			zap.L().Error("Failed to create or update user", zap.Error(err))

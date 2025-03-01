@@ -40,6 +40,26 @@ push:
 # Build and push the images
 deploy: build push
 
+# Test commands
+.PHONY: test test-cover test-report
+
+# Run all tests
+test:
+	cd backend && go test ./... -v | grep -v "/config\|/models\|/database\|/logging\|/server\|/utils"
+
+# Run tests with coverage
+test-cover:
+	cd backend && go test ./... -coverprofile=coverage.out | grep -v "/config\|/models\|/database\|/logging\|/server\|/utils"
+
+# Display test coverage report
+test-report: test-cover
+	cd backend && go tool cover -html=coverage.out
+
+# Run specific package tests
+.PHONY: test-pkg
+test-pkg:
+	@read -p "Enter package path: " pkg; \
+	cd backend && go test ./$$pkg -v
 
 # Utility commands
 .PHONY: clean
@@ -57,9 +77,6 @@ backend-shell:
 .PHONY: frontend-shell
 frontend-shell:
 	$(DOCKER_COMPOSE_DEV) exec frontend sh
-
-
-
 
 # help
 .PHONY: help
@@ -83,4 +100,8 @@ help:
 	@echo "  apply-secrets    Apply the secrets"
 	@echo "  apply-app    Apply the app"
 	@echo "  apply-all    Apply all"
+	@echo "  test         Run all tests"
+	@echo "  test-cover   Run tests with coverage"
+	@echo "  test-report  Display test coverage report"
+	@echo "  test-pkg     Run tests for a specific package"
 	@echo "  help         Show this help message"

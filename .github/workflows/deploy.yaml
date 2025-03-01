@@ -5,7 +5,35 @@ on:
     branches: [ main ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          
+      - name: Run backend tests
+        run: |
+          cd backend
+          go test $(go list ./... | grep -v "/config\|/models\|/database\|/logging\|/server\|/utils") -v
+          
+      - name: Generate coverage report
+        run: |
+          cd backend
+          go test $(go list ./... | grep -v "/config\|/models\|/database\|/logging\|/server\|/utils") -coverprofile=coverage.out
+          
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: backend/coverage.out
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read

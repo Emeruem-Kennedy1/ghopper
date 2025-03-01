@@ -17,11 +17,11 @@ type Server struct {
 	router          *gin.Engine
 	config          *config.Config
 	spotifyAuth     *auth.SpotifyAuth
-	userRepo        *repository.UserRepository
+	userRepo        repository.UserRepositoryInterface
 	songRepo        *repository.SongRepository
-	spotifySongRepo *repository.SpotifySongRepository
-	cleintManager   *services.ClientManager
-	spotifyService  *services.SpotifyService
+	spotifySongRepo repository.SpotifySongRepositoryInterface
+	cleintManager   services.ClientManagerInterface
+	spotifyService  services.SpotifyServiceInterface
 	logger          *zap.Logger
 }
 
