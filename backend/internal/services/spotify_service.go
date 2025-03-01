@@ -10,7 +10,7 @@ import (
 
 type SpotifyService struct {
 	clientManager   *ClientManager
-	spotifySongRepo *repository.SpotifySongRepository
+	spotifySongRepo repository.SpotifySongRepositoryInterface
 }
 
 // removeDuplicates removes duplicate spotify IDs from the slice
@@ -28,7 +28,7 @@ func removeDuplicates(ids []spotify.ID) []spotify.ID {
 	return result
 }
 
-func NewSpotifyService(clientManager *ClientManager, spotifySongRepo *repository.SpotifySongRepository) *SpotifyService {
+func NewSpotifyService(clientManager *ClientManager, spotifySongRepo repository.SpotifySongRepositoryInterface) *SpotifyService {
 	return &SpotifyService{
 		clientManager:   clientManager,
 		spotifySongRepo: spotifySongRepo,

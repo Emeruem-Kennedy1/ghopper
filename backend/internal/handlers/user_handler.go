@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Emeruem-Kennedy1/ghopper/internal/repository"
@@ -26,7 +25,15 @@ type PlaylistResponse struct {
 	Image       string `json:"image"`
 }
 
-func GetUser(userRepo *repository.UserRepository) gin.HandlerFunc {
+var getUserTopArtistsFunc = func(client services.SpotifyClientInterface, opts *spotify.Options) (*spotify.FullArtistPage, error) {
+    return client.CurrentUsersTopArtistsOpt(opts)
+}
+
+var getUserTopTracksFunc = func(client services.SpotifyClientInterface, opts *spotify.Options) (*spotify.FullTrackPage, error) {
+    return client.CurrentUsersTopTracksOpt(opts)
+}
+
+func GetUser(userRepo repository.UserRepositoryInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -49,7 +56,7 @@ func GetUser(userRepo *repository.UserRepository) gin.HandlerFunc {
 	}
 }
 
-func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
+func GetUserTopArtists(clientManager services.ClientManagerInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -69,7 +76,7 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 		limit := 25
 		timeRange := "short"
 
-		artists, err := client.CurrentUsersTopArtistsOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
+		artists, err := getUserTopArtistsFunc(client, &spotify.Options{Limit: &limit, Timerange: &timeRange})
 		if err != nil {
 			zap.L().Error("Failed to fetch top artists from Spotify",
 				zap.String("userID", userID.(string)),
@@ -85,7 +92,7 @@ func GetUserTopArtists(clientManager *services.ClientManager) gin.HandlerFunc {
 	}
 }
 
-func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *services.SpotifyService) gin.HandlerFunc {
+func GetUserTopTracks(clientManager services.ClientManagerInterface, spotifyService services.SpotifyServiceInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -105,7 +112,7 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 		limit := 25
 		timeRange := "short"
 
-		tracksRes, err := client.CurrentUsersTopTracksOpt(&spotify.Options{Limit: &limit, Timerange: &timeRange})
+		tracksRes, err := getUserTopTracksFunc(client, &spotify.Options{Limit: &limit, Timerange: &timeRange})
 
 		if err != nil {
 			zap.L().Error("Failed to fetch top tracks from Spotify",
@@ -138,7 +145,7 @@ func GetUserTopTracks(clientManager *services.ClientManager, spotifyService *ser
 	}
 }
 
-func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotifyService *services.SpotifyService) gin.HandlerFunc {
+func GetUserPlaylists(spotifySongRepo repository.SpotifySongRepositoryInterface, spotifyService services.SpotifyServiceInterface) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userID, exists := ctx.Get("userID")
 		if !exists {
@@ -200,34 +207,29 @@ func GetUserPlaylists(spotifySongRepo *repository.SpotifySongRepository, spotify
 	}
 }
 
-func DeleteUserAccount(userRepo *repository.UserRepository, spotifySongRepo *repository.SpotifySongRepository, clientManager *services.ClientManager) gin.HandlerFunc {
-    return func(ctx *gin.Context) {
-        userID, exists := ctx.Get("userID")
-        if !exists {
-            ctx.JSON(401, gin.H{"error": "Unauthorized"})
-            return
-        }
+func DeleteUserAccount(userRepo repository.UserRepositoryInterface, spotifySongRepo repository.SpotifySongRepositoryInterface, clientManager services.ClientManagerInterface) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID, exists := ctx.Get("userID")
+		if !exists {
+			ctx.JSON(401, gin.H{"error": "Unauthorized"})
+			return
+		}
 
-		fmt.Println("Deleting user account")
-        // Delete all playlists associated with user
-        if err := spotifySongRepo.DeleteUserPlaylists(userID.(string)); err != nil {
-            ctx.JSON(500, gin.H{"error": "Failed to delete user playlists"})
-            return
-        }
+		// Delete all playlists associated with user
+		if err := spotifySongRepo.DeleteUserPlaylists(userID.(string)); err != nil {
+			ctx.JSON(500, gin.H{"error": "Failed to delete user playlists"})
+			return
+		}
 
-		fmt.Println("Removing user from client manager")
-        // Remove the client from clientManager
-        clientManager.RemoveClient(userID.(string))
+		// Remove the client from clientManager
+		clientManager.RemoveClient(userID.(string))
 
-        // Delete the user
-		fmt.Println("Deleting user")
-        if err := userRepo.Delete(userID.(string)); err != nil {
-            ctx.JSON(500, gin.H{"error": "Failed to delete user account"})
-            return
-        }
+		// Delete the user
+		if err := userRepo.Delete(userID.(string)); err != nil {
+			ctx.JSON(500, gin.H{"error": "Failed to delete user account"})
+			return
+		}
 
-		fmt.Println("User account successfully deleted")
-
-        ctx.JSON(http.StatusOK, gin.H{"message": "Account successfully deleted"})
-    }
+		ctx.JSON(http.StatusOK, gin.H{"message": "Account successfully deleted"})
+	}
 }

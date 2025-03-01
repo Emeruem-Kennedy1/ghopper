@@ -11,8 +11,11 @@ import (
 	"github.com/zmb3/spotify"
 )
 
+// Make the function a variable so it can be swapped in tests
+var CreateOrUpdateUserFromSpotifyDataFunc = CreateOrUpdateUserFromSpotifyDataImpl
+
 type SpotifyAuth struct {
-	authenticator spotify.Authenticator
+	authenticator AuthenticatorInterface
 	state         string
 	config        *config.Config
 }
@@ -34,7 +37,7 @@ func NewSpotifyAuth(cfg *config.Config) (*SpotifyAuth, error) {
 	}
 
 	return &SpotifyAuth{
-		authenticator: auth,
+		authenticator: &auth,
 		state:         state,
 		config:        cfg,
 	}, nil
@@ -45,13 +48,13 @@ func (sa *SpotifyAuth) AuthURL() string {
 }
 
 func (sa *SpotifyAuth) CallBack(r *http.Request) (*spotify.Client, error) {
+	if st := r.FormValue("state"); st != sa.state {
+		return nil, fmt.Errorf("state mismatch: %s != %s", st, sa.state)
+	}
+
 	tok, err := sa.authenticator.Token(sa.state, r)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get token: %v", err)
-	}
-
-	if st := r.FormValue("state"); st != sa.state {
-		return nil, fmt.Errorf("state mismatch: %s != %s", st, sa.state)
 	}
 
 	client := sa.authenticator.NewClient(tok)
@@ -67,7 +70,7 @@ func (sa *SpotifyAuth) GetUserInfo(client *spotify.Client) (*spotify.PrivateUser
 	return user, nil
 }
 
-func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spotifyUser spotify.PrivateUser) (*models.User, string, error) {
+func CreateOrUpdateUserFromSpotifyDataImpl(userRepo repository.UserRepositoryInterface, spotifyUser spotify.PrivateUser) (*models.User, string, error) {
 	user := &models.User{
 		ID:          spotifyUser.ID,
 		DisplayName: spotifyUser.DisplayName,
@@ -85,7 +88,7 @@ func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spot
 		return nil, "", fmt.Errorf("failed to create or update user: %v", err)
 	}
 
-	token, err := GenerateToken(user)
+	token, err := GenerateTokenFunc(user)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate token: %v", err)
 	}
@@ -94,6 +97,10 @@ func CreateOrUpdateUserFromSpotifyData(userRepo *repository.UserRepository, spot
 
 }
 
-func (sa *SpotifyAuth) GetAuthenticator() spotify.Authenticator {
+func CreateOrUpdateUserFromSpotifyData(userRepo repository.UserRepositoryInterface, spotifyUser spotify.PrivateUser) (*models.User, string, error) {
+	return CreateOrUpdateUserFromSpotifyDataFunc(userRepo, spotifyUser)
+}
+
+func (sa *SpotifyAuth) GetAuthenticator() AuthenticatorInterface {
 	return sa.authenticator
 }
