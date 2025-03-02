@@ -77,7 +77,7 @@ Before you begin, ensure you have the following installed:
 ## Setting Up Samples Database (Important)
 
 ### prerequisites
-- MySQL
+- MariaDB or any MySQL database (Note: If you don't use MariaDB you might need to do you might need to do more setup)
 - Node.js
 - Prisma CLI (`npm install -g prisma`)
 
