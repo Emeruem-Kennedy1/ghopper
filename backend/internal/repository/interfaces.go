@@ -33,8 +33,20 @@ type SpotifySongRepositoryInterface interface {
 	DeleteUserPlaylists(userID string) error
 }
 
+// NonSpotifyUserRepositoryInterface defines the methods for the NonSpotifyUserRepository
+type NonSpotifyUserRepositoryInterface interface {
+	FindByID(id string) (*models.NonSpotifyUser, error)
+	Create(user *models.NonSpotifyUser) error
+	Verify(id, passphrase string) (bool, error)
+	SavePlaylist(playlist *models.NonSpotifyPlaylist, tracks []models.NonSpotifyPlaylistTrack, seedTracks []models.NonSpotifyPlaylistSeedTrack) error
+	GetUserPlaylists(userID string) ([]models.NonSpotifyPlaylist, error)
+	GetPlaylistWithTracks(playlistID string) (*models.NonSpotifyPlaylistWithTracks, error)
+	UpdateTrackStatus(trackID string, addedToPlaylist bool) error
+	DeletePlaylist(playlistID string) error
+}
 
 // Ensure the UserRepository, SpotifySongRepository and SongRepository implement our interfaces
 var _ UserRepositoryInterface = (*UserRepository)(nil)
 var _ SongRepositoryInterface = (*SongRepository)(nil)
 var _ SpotifySongRepositoryInterface = (*SpotifySongRepository)(nil)
+var _ NonSpotifyUserRepositoryInterface = (*NonSpotifyUserRepository)(nil)

@@ -47,7 +47,14 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 
-	db.AutoMigrate(&models.User{}, &models.Song{}, &models.Playlist{})
+	db.AutoMigrate(
+		&models.User{},
+		&models.Song{},
+		&models.Playlist{},
+		&models.NonSpotifyUser{},
+		&models.NonSpotifyPlaylist{},
+		&models.NonSpotifyPlaylistTrack{},
+		&models.NonSpotifyPlaylistSeedTrack{})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)

@@ -14,18 +14,26 @@ import (
 )
 
 type Server struct {
-	router          *gin.Engine
-	config          *config.Config
-	spotifyAuth     *auth.SpotifyAuth
-	userRepo        repository.UserRepositoryInterface
-	songRepo        *repository.SongRepository
-	spotifySongRepo repository.SpotifySongRepositoryInterface
-	cleintManager   services.ClientManagerInterface
-	spotifyService  services.SpotifyServiceInterface
-	logger          *zap.Logger
+	router             *gin.Engine
+	config             *config.Config
+	spotifyAuth        *auth.SpotifyAuth
+	userRepo           repository.UserRepositoryInterface
+	songRepo           *repository.SongRepository
+	spotifySongRepo    repository.SpotifySongRepositoryInterface
+	nonSpotifyUserRepo *repository.NonSpotifyUserRepository
+	cleintManager      services.ClientManagerInterface
+	spotifyService     services.SpotifyServiceInterface
+	logger             *zap.Logger
 }
 
-func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo *repository.SongRepository, spotifySongRepo *repository.SpotifySongRepository, logger *zap.Logger) (*Server, error) {
+func NewServer(
+	cfg *config.Config,
+	userRepo *repository.UserRepository,
+	songRepo *repository.SongRepository,
+	spotifySongRepo *repository.SpotifySongRepository,
+	nonSpotifyUserRepo *repository.NonSpotifyUserRepository,
+	logger *zap.Logger,
+) (*Server, error) {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -41,15 +49,16 @@ func NewServer(cfg *config.Config, userRepo *repository.UserRepository, songRepo
 	spotifyService := services.NewSpotifyService(clientManager, spotifySongRepo)
 
 	s := &Server{
-		router:          r,
-		config:          cfg,
-		spotifyAuth:     spotifyAuth,
-		userRepo:        userRepo,
-		songRepo:        songRepo,
-		spotifySongRepo: spotifySongRepo,
-		cleintManager:   clientManager,
-		spotifyService:  spotifyService,
-		logger:          logger,
+		router:             r,
+		config:             cfg,
+		spotifyAuth:        spotifyAuth,
+		userRepo:           userRepo,
+		songRepo:           songRepo,
+		spotifySongRepo:    spotifySongRepo,
+		nonSpotifyUserRepo: nonSpotifyUserRepo,
+		cleintManager:      clientManager,
+		spotifyService:     spotifyService,
+		logger:             logger,
 	}
 	gin.Logger()
 
@@ -61,6 +70,10 @@ func (s *Server) setupRoutes() {
 
 	s.router.GET("/auth/spotify/login", handlers.SpotifyLogin(s.spotifyAuth))
 	s.router.GET("/auth/spotify/callback", handlers.SpotifyCallback(s.spotifyAuth, s.userRepo, s.cleintManager, s.config))
+
+	// non-Spotify users Public routes
+	s.router.POST("/auth/non-spotify/register", handlers.RegisterNonSpotifyUser(s.nonSpotifyUserRepo))
+	s.router.POST("/auth/non-spotify/verify", handlers.VerifyNonSpotifyUser(s.nonSpotifyUserRepo))
 
 	protected := s.router.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
@@ -74,6 +87,17 @@ func (s *Server) setupRoutes() {
 		protected.GET("/user/playlists", handlers.GetUserPlaylists(s.spotifySongRepo, s.spotifyService))
 		protected.DELETE("/user/playlists/:playlistID", handlers.DeletePlaylist(s.spotifyService, s.spotifySongRepo))
 		protected.DELETE("/user/account", handlers.DeleteUserAccount(s.userRepo, s.spotifySongRepo, s.cleintManager))
+	}
+
+	nonSpotifyProtected := s.router.Group("/api/non-spotify")
+	nonSpotifyProtected.Use(middleware.NonSpotifyAuthMiddleware(s.nonSpotifyUserRepo))
+	{
+		// Routes for non-Spotify users
+		nonSpotifyProtected.POST("/playlists", handlers.GenerateNonSpotifyPlaylist(s.nonSpotifyUserRepo, s.songRepo))
+		nonSpotifyProtected.GET("/playlists", handlers.GetNonSpotifyUserPlaylists(s.nonSpotifyUserRepo))
+		nonSpotifyProtected.GET("/playlists/:playlistID", handlers.GetNonSpotifyPlaylistDetails(s.nonSpotifyUserRepo))
+		nonSpotifyProtected.PATCH("/tracks/:trackID", handlers.UpdateNonSpotifyTrackStatus(s.nonSpotifyUserRepo))
+		nonSpotifyProtected.DELETE("/playlists/:playlistID", handlers.DeleteNonSpotifyPlaylist(s.nonSpotifyUserRepo))
 	}
 }
 

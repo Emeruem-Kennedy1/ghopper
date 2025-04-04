@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Typography, App } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { getToken } from "../utils/auth";
@@ -60,6 +60,14 @@ const buttonContainerStyle = {
   justifyContent: "center",
   gap: "1rem",
   marginBottom: "2rem",
+};
+
+const nonSpotifyContainerStyle = {
+  display: "flex",
+  flexDirection: "column" as const,
+  alignItems: "center",
+  width: "70%",
+  textAlign: "center" as const,
 };
 
 const genres = [
@@ -228,6 +236,22 @@ const Homepage: React.FC = () => {
           generatePlaylistMutation={generatePlaylistMutation}
         />
       </div>
+      {/* if user is not logged in */}
+      {!user && (
+        <div style={nonSpotifyContainerStyle}>
+          <Title level={4} style={{ marginBottom: "1.5rem" }}>
+            Create Playlists Without Spotify
+          </Title>
+          <Paragraph style={{ fontSize: "1.125rem", marginBottom: "2rem" }}>
+            If you don't have a Spotify account, you can still create playlists
+            based on your favorite songs and genres. Just click the button below
+            to get started!
+          </Paragraph>
+          <Button type="primary" ghost>
+            <Link to="/non-spotify/login">Use Without Spotify</Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
