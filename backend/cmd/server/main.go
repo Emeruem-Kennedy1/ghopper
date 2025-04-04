@@ -36,9 +36,10 @@ func main() {
 	userRepo := repository.NewUserRepository(dbs.AppDB)
 	songRepo := repository.NewSongRepository(dbs.SamplesDB)
 	spotifySongRepo := repository.NewSpotifySongRepository(dbs.AppDB)
+	nonSpotifyUserRepo := repository.NewNonSpotifyUserRepository(dbs.AppDB)
 
 	// init and start server
-	s, err := server.NewServer(cfg, userRepo, songRepo, spotifySongRepo, logger)
+	s, err := server.NewServer(cfg, userRepo, songRepo, spotifySongRepo, nonSpotifyUserRepo, logger)
 
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
