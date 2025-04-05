@@ -1,4 +1,3 @@
-// frontend/src/pages/NonSpotifyDashboardPage.tsx
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -117,7 +116,7 @@ const NonSpotifyDashboardPage: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <Title level={2}>Your Playlists</Title>
+          <Title level={3}>Your Playlists</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
