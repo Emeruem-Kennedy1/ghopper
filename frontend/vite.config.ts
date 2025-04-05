@@ -20,12 +20,13 @@ export default defineConfig(({ mode }) => {
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
-      strategies: 'injectManifest',
-      srcDir: 'public',
-      filename: 'service-worker.js',
-      includeAssets: ['favicon.ico', 'app-icon.svg', 'robots.txt'],
-      manifest: false // We're using our own manifest.json
+        injectRegister: 'auto',
+        strategies: 'generateSW', // Change to generateSW
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        },
+        includeAssets: ['favicon.ico', 'app-icon.svg', 'robots.txt'],
+        manifest: false // Keep using your existing manifest.json
     })
     ],
     server: {
