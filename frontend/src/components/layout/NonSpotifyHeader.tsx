@@ -1,5 +1,6 @@
+// frontend/src/components/layout/NonSpotifyHeader.tsx
 import React from "react";
-import { Layout, Avatar, Dropdown, Space, theme, App } from "antd";
+import { Layout, Avatar, Dropdown, Space, theme, Modal } from "antd";
 import {
   LogoutOutlined,
   DashboardOutlined,
@@ -20,10 +21,9 @@ const NonSpotifyHeader: React.FC<{ children?: React.ReactNode }> = ({
 }) => {
   const { token } = useToken();
   const { userId, logout } = useNonSpotifyAuth();
-  const { modal: modalApi } = App.useApp();
 
   const handleLogout = () => {
-    modalApi.confirm({
+    Modal.confirm({
       title: "Logout",
       content: "Are you sure you want to logout?",
       okText: "Logout",
@@ -92,6 +92,17 @@ const NonSpotifyHeader: React.FC<{ children?: React.ReactNode }> = ({
             </Dropdown>
           </Space>
         )}
+        <span
+          style={{
+            padding: "4px 8px",
+            backgroundColor: token.colorPrimaryBg,
+            color: token.colorPrimary,
+            borderRadius: "10px",
+            fontSize: "12px",
+          }}
+        >
+          General Mode
+        </span>
       </Space>
     </Header>
   );

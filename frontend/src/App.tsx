@@ -15,7 +15,6 @@ import NonSpotifyLayout from "./components/layout/NonSpotifyLayout";
 import { App as AntApp } from "antd";
 import { NonSpotifyAuthProvider } from "./context/NonSpotifyAuthContext";
 import NonSpotifyHeader from "./components/layout/NonSpotifyHeader";
-import InstallPWABanner from "./components/common/InstallPWABanner";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +46,7 @@ const App = () => {
     }
   };
 
-  // Theme toggle component used in both headers
+  // Theme toggle component to be used in both headers
   const ThemeToggle = (
     <Switch
       checked={currentTheme === "dark"}
@@ -62,7 +61,6 @@ const App = () => {
       <ConfigProvider theme={getTheme()}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <InstallPWABanner />
             <Routes>
               {/* Non-Spotify routes with NonSpotifyLayout */}
               <Route

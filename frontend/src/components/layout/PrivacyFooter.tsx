@@ -1,11 +1,9 @@
 // components/layout/PrivacyFooter.tsx
 import React, { useState } from "react";
-import { Modal, Typography, Space, Layout, theme } from "antd";
-import { useNonSpotifyAuth } from "../../hooks/useNonSpotifyAuth";
+import { Modal, Typography, Space, Layout } from "antd";
 
 const { Footer } = Layout;
 const { Text, Title, Paragraph } = Typography;
-const { useToken } = theme;
 
 const PrivacyFooter: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,9 +15,6 @@ const PrivacyFooter: React.FC = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
-  const { token } = useToken();
-  const { userId } = useNonSpotifyAuth();
 
   return (
     <Footer
@@ -37,19 +32,6 @@ const PrivacyFooter: React.FC = () => {
       }}
     >
       <Space>
-        {userId && (
-        <span
-          style={{
-            padding: "4px 8px",
-            backgroundColor: token.colorPrimaryBg,
-            color: token.colorPrimary,
-            borderRadius: "10px",
-            fontSize: "12px",
-          }}
-        >
-          General Mode
-          </span>
-        )}
         <Text>© {new Date().getFullYear()} G-hopper</Text>
         <Text type="secondary">|</Text>
         <Text
