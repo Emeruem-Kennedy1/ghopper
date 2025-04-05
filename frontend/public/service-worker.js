@@ -17,14 +17,4 @@ self.addEventListener("install", (event) => {
   );
 });
 
-self.addEventListener("fetch", (event) => {
-
-  if (event.request.url.includes('/api/')) {
-    return;
-  }
-  
-  // Network-first strategy
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
-  );
-});
+self.addEventListener("fetch", (event) => {});

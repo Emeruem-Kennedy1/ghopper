@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
-import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,18 +16,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-        injectRegister: 'auto',
-        strategies: 'generateSW', // Change to generateSW
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        },
-        includeAssets: ['favicon.ico', 'app-icon.svg', 'robots.txt'],
-        manifest: false // Keep using your existing manifest.json
-    })
-    ],
+      react(),],
     server: {
       host: "0.0.0.0",
       port: 3000,
