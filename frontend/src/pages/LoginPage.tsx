@@ -20,7 +20,7 @@ const LoginPage = () => {
     if (returnTo) {
       localStorage.setItem("returnTo", returnTo);
     }
-    window.location.href = `api/auth/spotify/login`;
+    window.location.href = `/api/auth/spotify/login`;
   };
 
   if (user) {
