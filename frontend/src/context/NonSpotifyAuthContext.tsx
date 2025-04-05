@@ -1,4 +1,3 @@
-// frontend/src/context/NonSpotifyAuthContext.tsx
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {

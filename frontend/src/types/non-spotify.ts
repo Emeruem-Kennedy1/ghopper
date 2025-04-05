@@ -1,4 +1,3 @@
-// frontend/src/types/non-spotify.ts
 export type NonSpotifyUser = {
     id: string;
     created_at: string;
