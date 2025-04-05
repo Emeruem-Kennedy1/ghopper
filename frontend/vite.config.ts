@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -15,7 +16,18 @@ export default defineConfig(({ mode }) => {
   console.log(`Mode: ${mode}, Backend URL: ${backendUrl}`); // For debugging
 
   return {
-    plugins: [react()],
+    plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'service-worker.js',
+      includeAssets: ['favicon.ico', 'app-icon.svg', 'robots.txt'],
+      manifest: false // We're using our own manifest.json
+    })
+    ],
     server: {
       host: "0.0.0.0",
       port: 3000,
