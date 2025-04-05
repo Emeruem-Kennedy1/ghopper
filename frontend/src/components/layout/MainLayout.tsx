@@ -2,6 +2,7 @@ import React from "react";
 import { Layout } from "antd";
 import CustomHeader from "./CustomHeader";
 import { config } from "../../config";
+import PrivacyFooter from "./PrivacyFooter";
 
 const { Content } = Layout;
 
@@ -18,6 +19,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       >
         {children}
       </Content>
+      <PrivacyFooter spotify={false} />
     </Layout>
   );
 };

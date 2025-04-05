@@ -21,7 +21,7 @@ const NonSpotifyLayout: React.FC<{ children: React.ReactNode }> = ({
       >
         {children}
       </Content>
-      <PrivacyFooter />
+      <PrivacyFooter spotify={true} />
     </Layout>
   );
 };

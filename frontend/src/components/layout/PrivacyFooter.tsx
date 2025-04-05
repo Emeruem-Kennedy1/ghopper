@@ -1,13 +1,16 @@
 // components/layout/PrivacyFooter.tsx
 import React, { useState } from "react";
 import { Modal, Typography, Space, Layout, theme } from "antd";
-import { useNonSpotifyAuth } from "../../hooks/useNonSpotifyAuth";
 
 const { Footer } = Layout;
 const { Text, Title, Paragraph } = Typography;
 const { useToken } = theme;
 
-const PrivacyFooter: React.FC = () => {
+interface PrivacyFooterProps {
+  spotify: boolean;
+}
+
+const PrivacyFooter: React.FC<PrivacyFooterProps> = ({ spotify }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
@@ -19,7 +22,6 @@ const PrivacyFooter: React.FC = () => {
   };
 
   const { token } = useToken();
-  const { userId } = useNonSpotifyAuth();
 
   return (
     <Footer
@@ -37,7 +39,7 @@ const PrivacyFooter: React.FC = () => {
       }}
     >
       <Space>
-        {userId && (
+        {spotify && (
         <span
           style={{
             padding: "4px 8px",
